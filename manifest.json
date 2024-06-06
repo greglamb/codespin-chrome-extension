@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "CodeSpin.AI Chat",
+  "version": "1.0",
+  "description": "Adds a link to all code blocks on the ChatGPT page",
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
+      "js": ["dist/main.js"],
+      "type": "module"
+    }
+  ]
+}
