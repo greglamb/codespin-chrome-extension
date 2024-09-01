@@ -44,7 +44,6 @@ function handleCodeSpinSyncClick(
       contents: codeText,
     };
 
-    console.log({ message });
     sendCodeToIDE(message);
   }
 }
