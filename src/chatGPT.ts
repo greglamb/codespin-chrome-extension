@@ -45,38 +45,49 @@ function handleCodeSpinSyncClick(
       filePath: filePath,
       contents: codeText,
     };
+
+    console.log({ message });
     sendCodeToIDE(message);
   }
 }
 
 // Function to attach the "CodeSpin Sync" button specifically for ChatGPT
-function attachChatGPTButton(preElement: HTMLElement, projectRoot: string) {
+function attachChatGPTButton(preElement: HTMLElement) {
+  console.log({ tt: preElement.innerText });
   const filePath = findFilePathInMarkdownProse(preElement);
 
-  if (!filePath) {
-    return;
-  }
+  if (filePath) {
+    const projectRoot = extractProjectRoot();
 
-  // Find the "Copy code" button container to attach the CodeSpin Sync button
-  const copyButtonContainer = preElement.querySelector(
-    'div > div > div > span[data-state="closed"]'
-  )?.parentElement;
+    if (projectRoot) {
+      // Find the "Copy code" button container to attach the CodeSpin Sync button
+      const copyButtonContainer = preElement.querySelector(
+        "div > div > div > span > button"
+      )?.parentElement?.parentElement;
 
-  if (copyButtonContainer) {
-    // Convert the CodeSpinButtonHtml string to a DOM element
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(CodeSpinButtonHtml, "text/html");
-    const codeSpinButtonElement = doc.body.firstChild as HTMLElement;
+      if (copyButtonContainer) {
+        // Convert the CodeSpinButtonHtml string to a DOM element
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(CodeSpinButtonHtml, "text/html");
+        const codeSpinButtonElement = doc.body.firstChild as HTMLElement;
 
-    // Attach the click event using the separate function
-    codeSpinButtonElement.onclick = () =>
-      handleCodeSpinSyncClick(preElement, projectRoot, filePath);
+        console.log({
+          m: copyButtonContainer.innerText,
+          copyButtonContainer,
+          projectRoot,
+          filePath,
+        });
+        // Attach the click event using the separate function
+        codeSpinButtonElement.onclick = () =>
+          handleCodeSpinSyncClick(preElement, projectRoot, filePath);
 
-    // Insert the CodeSpin Sync button before the "Copy code" button
-    copyButtonContainer.parentElement?.insertBefore(
-      codeSpinButtonElement,
-      copyButtonContainer
-    );
+        // Insert the CodeSpin Sync button before the "Copy code" button
+        copyButtonContainer.parentElement?.insertBefore(
+          codeSpinButtonElement,
+          copyButtonContainer
+        );
+      }
+    }
   }
 }
 
@@ -94,7 +105,7 @@ export function attachLinksForChatGPT() {
   codeBlocks.forEach((preElement) => {
     if (!(preElement as any).attachedCodespinLink) {
       // Attach the site-specific button
-      attachChatGPTButton(preElement as HTMLElement, projectRoot);
+      attachChatGPTButton(preElement as HTMLElement);
 
       (preElement as any).attachedCodespinLink = true;
     }
