@@ -10,8 +10,10 @@ function findFilePathInMarkdownProse(element: HTMLElement): string | null {
     const paragraphs = parent.querySelectorAll("p");
     for (const paragraph of Array.from(paragraphs)) {
       const textContent = paragraph.textContent || "";
-      console.log({ textContent });
-      const filePathMatch = textContent.match(/File path:(.*?)(?=\n|$)/);
+      const filePathMatch = textContent.match(
+        /File path:\s*["'`]?(.+?)["'`]?(\n|$)/
+      );
+
       if (filePathMatch) {
         return filePathMatch[1].trim();
       }
@@ -43,12 +45,7 @@ function handleCodeSpinSyncClick(
       filePath: filePath,
       contents: codeText,
     };
-    console.log({
-      message,
-    });
     sendCodeToIDE(message);
-  } else {
-    console.error("Project root, file path, or code content is missing.");
   }
 }
 
@@ -57,7 +54,6 @@ function attachChatGPTButton(preElement: HTMLElement, projectRoot: string) {
   const filePath = findFilePathInMarkdownProse(preElement);
 
   if (!filePath) {
-    console.error("File path could not be found.");
     return;
   }
 
@@ -81,8 +77,6 @@ function attachChatGPTButton(preElement: HTMLElement, projectRoot: string) {
       codeSpinButtonElement,
       copyButtonContainer
     );
-  } else {
-    console.error("Copy code button container could not be found.");
   }
 }
 
@@ -94,14 +88,11 @@ export function attachLinksForChatGPT() {
   const projectRoot = extractProjectRoot();
 
   if (!projectRoot) {
-    console.error("Project root could not be found.");
     return;
   }
 
   codeBlocks.forEach((preElement) => {
     if (!(preElement as any).attachedCodespinLink) {
-      console.log(`Code length: ${preElement.innerText.length}`);
-
       // Attach the site-specific button
       attachChatGPTButton(preElement as HTMLElement, projectRoot);
 

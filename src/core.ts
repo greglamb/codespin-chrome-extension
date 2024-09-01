@@ -18,10 +18,7 @@ async function sendCodeToIDE(message: {
     }
 
     const responseData = await response.json();
-    console.log("Response from server:", responseData);
-  } catch (error) {
-    console.error("Error sending code to IDE:", error);
-  }
+  } catch (error) {}
 }
 
 export { sendCodeToIDE };
