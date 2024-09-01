@@ -1,1 +1,1 @@
-export declare function attachLinks(): void;
+export declare function attachLinksForChatGPT(): void;
