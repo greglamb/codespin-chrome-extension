@@ -1,24 +1,22 @@
 import { sendCodeToIDE } from "./core.js";
 import { CodeSpinButtonHtml } from "./CodeSpinButtonHtml.js";
 
-// Function to find the nearest parent with classes "markdown" and "prose"
-// and extract the first "File path:..." occurrence in the text content
 function findFilePathInMarkdownProse(element: HTMLElement): string | null {
-  const parent = element.closest(".markdown.prose");
+  let sibling = element.previousElementSibling as HTMLElement | null;
 
-  if (parent) {
-    const paragraphs = parent.querySelectorAll("p");
-    for (const paragraph of Array.from(paragraphs)) {
-      const textContent = paragraph.textContent || "";
-      const filePathMatch = textContent.match(
-        /File path:\s*["'`]?(.+?)["'`]?(\n|$)/
-      );
+  while (sibling) {
+    const textContent = sibling.textContent || "";
+    const filePathMatch = textContent.match(
+      /File path:\s*["'`]?(.+?)["'`]?(\n|$)/
+    );
 
-      if (filePathMatch) {
-        return filePathMatch[1].trim();
-      }
+    if (filePathMatch) {
+      return filePathMatch[1].trim();
     }
+
+    sibling = sibling.previousElementSibling as HTMLElement | null;
   }
+
   return null;
 }
 
@@ -53,7 +51,6 @@ function handleCodeSpinSyncClick(
 
 // Function to attach the "CodeSpin Sync" button specifically for ChatGPT
 function attachChatGPTButton(preElement: HTMLElement) {
-  console.log({ tt: preElement.innerText });
   const filePath = findFilePathInMarkdownProse(preElement);
 
   if (filePath) {
@@ -71,12 +68,6 @@ function attachChatGPTButton(preElement: HTMLElement) {
         const doc = parser.parseFromString(CodeSpinButtonHtml, "text/html");
         const codeSpinButtonElement = doc.body.firstChild as HTMLElement;
 
-        console.log({
-          m: copyButtonContainer.innerText,
-          copyButtonContainer,
-          projectRoot,
-          filePath,
-        });
         // Attach the click event using the separate function
         codeSpinButtonElement.onclick = () =>
           handleCodeSpinSyncClick(preElement, projectRoot, filePath);
