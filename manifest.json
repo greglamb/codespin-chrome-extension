@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "CodeSpin.AI Chat",
   "version": "1.0",
-  "description": "Adds a link to all code blocks on the ChatGPT page",
+  "description": "Adds a link to code blocks on ChatGPT to sync with VSCode",
   "permissions": ["activeTab"],
   "content_scripts": [
     {
