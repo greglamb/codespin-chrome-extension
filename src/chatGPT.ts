@@ -44,6 +44,10 @@ function handleCodeSpinSyncClick(
       contents: codeText,
     };
 
+    if ((globalThis as any).__CODESPIN_DEBUG__) {
+      console.log({ message });
+    }
+
     sendCodeToIDE(message);
   }
 }
