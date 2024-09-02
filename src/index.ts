@@ -1,4 +1,4 @@
-import * as chatGPT from "./chatGPT.js";
+import * as chatGPT from "./chatGPT/index.js";
 
 function start() {
   const app = getDomain();
@@ -13,7 +13,13 @@ function start() {
   }
 
   if (app === "CHATGPT") {
-    chatGPT.attachCodeSpinLinks();
+    setTimeout(() => {
+      chatGPT.attachCodeSpinLinks();
+    }, 1000);
+
+    setInterval(() => {
+      chatGPT.attachCodeSpinLinks();
+    }, 3000);
   }
 }
 
