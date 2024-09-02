@@ -1,11 +1,12 @@
 import { writeFile } from "./writeFile.js";
 import { CodeSpinButtonHtml } from "./CodeSpinButtonHtml.js";
 
+let cachedProjectSyncUrl: string | null = null; // In-memory cache for the project sync URL
+
 function findFilePathInMarkdownProse(element: HTMLElement): string | null {
   let sibling = element.previousElementSibling as HTMLElement | null;
 
   while (sibling) {
-    // Stop searching if the sibling is a <pre> element
     if (sibling.tagName.toLowerCase() === "pre") {
       return null;
     }
@@ -26,24 +27,30 @@ function findFilePathInMarkdownProse(element: HTMLElement): string | null {
 }
 
 async function extractProjectSyncUrl(): Promise<string | null> {
+  if (cachedProjectSyncUrl) {
+    return cachedProjectSyncUrl;
+  }
+
   const match = document.body.innerText.match(
     /The project's sync url is "(https?:\/\/[^\s]+)"/
   );
 
   if (match) {
-    return match[1];
+    cachedProjectSyncUrl = match[1];
+    showSyncOverlayButton(); // Show the overlay button when the URL is set
+    return cachedProjectSyncUrl;
   }
 
-  // If not found, ask the user to input the URL
   return requestProjectSyncUrlFromUser();
 }
 
-// Function to request project sync URL from the user via a dialog
 function requestProjectSyncUrlFromUser(): Promise<string | null> {
   const dialogHtml = `
     <dialog id="codespin-dialog" style="width: 400px; background-color: black; color: #ccc; border-radius: 8px; padding: 20px; border: solid #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);">
       <label for="codespin-url">Project sync url:</label><br>
-      <input type="text" id="codespin-url" name="codespin-url" style="width: 100%; margin-top: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;" required><br><br>
+      <input type="text" id="codespin-url" name="codespin-url" style="width: 100%; color: black; margin-top: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;" required value="${
+        cachedProjectSyncUrl || ""
+      }"><br><br>
       <button id="codespin-submit" style="background-color: green; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
       <button id="codespin-cancel" style="background-color: #f44336; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Cancel</button>
     </dialog>
@@ -60,9 +67,15 @@ function requestProjectSyncUrlFromUser(): Promise<string | null> {
     document.getElementById("codespin-submit")!.onclick = () => {
       const url = (document.getElementById("codespin-url") as HTMLInputElement)
         .value;
+      cachedProjectSyncUrl = url || null;
       dialog.close();
       dialog.remove();
-      resolve(url || null);
+      if (cachedProjectSyncUrl) {
+        showSyncOverlayButton(); // Show the overlay button when the URL is set
+      } else {
+        removeSyncOverlayButton(); // Remove the overlay button when the URL is cleared
+      }
+      resolve(cachedProjectSyncUrl);
     };
 
     document.getElementById("codespin-cancel")!.onclick = () => {
@@ -73,7 +86,32 @@ function requestProjectSyncUrlFromUser(): Promise<string | null> {
   });
 }
 
-// Separate function to handle the "CodeSpin Sync" button click
+function showSyncOverlayButton() {
+  let overlayButton = document.getElementById("codespin-overlay-button");
+
+  if (!overlayButton) {
+    const buttonHtml = `
+      <button id="codespin-overlay-button" style="position: fixed; bottom: 20px; right: 20px; background-color: blue; color: white; padding: 10px 20px; border: none; border-radius: 50px; cursor: pointer; z-index: 1000;">
+        Syncing...
+      </button>
+    `;
+    document.body.insertAdjacentHTML("beforeend", buttonHtml);
+
+    overlayButton = document.getElementById("codespin-overlay-button");
+  }
+
+  overlayButton!.onclick = () => {
+    requestProjectSyncUrlFromUser();
+  };
+}
+
+function removeSyncOverlayButton() {
+  const overlayButton = document.getElementById("codespin-overlay-button");
+  if (overlayButton) {
+    overlayButton.remove();
+  }
+}
+
 async function handleCodeSpinSyncClick(
   preElement: HTMLElement,
   filePath: string
@@ -96,27 +134,22 @@ async function handleCodeSpinSyncClick(
   }
 }
 
-// Function to attach the "CodeSpin Sync" button specifically for ChatGPT
 async function attachChatGPTButton(preElement: HTMLElement) {
   const filePath = findFilePathInMarkdownProse(preElement);
 
   if (filePath) {
-    // Find the "Copy code" button container to attach the CodeSpin Sync button
     const copyButtonContainer = preElement.querySelector(
       "div > div > div > span > button"
     )?.parentElement?.parentElement;
 
     if (copyButtonContainer) {
-      // Convert the CodeSpinButtonHtml string to a DOM element
       const parser = new DOMParser();
       const doc = parser.parseFromString(CodeSpinButtonHtml, "text/html");
       const codeSpinButtonElement = doc.body.firstChild as HTMLElement;
 
-      // Attach the click event using the separate function
       codeSpinButtonElement.onclick = () =>
         handleCodeSpinSyncClick(preElement, filePath);
 
-      // Insert the CodeSpin Sync button before the "Copy code" button
       copyButtonContainer.parentElement?.insertBefore(
         codeSpinButtonElement,
         copyButtonContainer
@@ -125,26 +158,21 @@ async function attachChatGPTButton(preElement: HTMLElement) {
   }
 }
 
-// Function to scan and attach buttons to code blocks in ChatGPT
 export function attachLinksForChatGPT() {
   const codeBlocks = document.querySelectorAll("pre");
 
   codeBlocks.forEach((preElement) => {
     if (!(preElement as any).attachedCodespinLink) {
-      // Attach the site-specific button
       attachChatGPTButton(preElement as HTMLElement);
-
       (preElement as any).attachedCodespinLink = true;
     }
   });
 }
 
-// Attach the CodeSpin buttons to code blocks
 setTimeout(() => {
   attachLinksForChatGPT();
 }, 1000);
 
-// Re-check for new code blocks every 3 seconds
 setInterval(() => {
   attachLinksForChatGPT();
 }, 3000);
