@@ -1,7 +1,7 @@
 import { CodeSpinButtonHtml } from "./CodeSpinButtonHtml.js";
 import { writeFile } from "./writeFile.js";
 
-let cachedProjectSyncUrl: string | null = null; // In-memory cache for the project sync URL
+let cachedProjectSyncUrls: Map<string, string | null> = new Map(); // In-memory cache for project sync URLs keyed by page URL
 let buttonPosition = {
   left: "auto",
   top: "auto",
@@ -34,8 +34,10 @@ function findFilePathInMarkdownProse(element: HTMLElement): string | null {
 }
 
 async function extractProjectSyncUrl(): Promise<string | null> {
-  if (cachedProjectSyncUrl) {
-    return cachedProjectSyncUrl;
+  const currentUrl = window.location.href;
+
+  if (cachedProjectSyncUrls.has(currentUrl)) {
+    return cachedProjectSyncUrls.get(currentUrl) || null;
   }
 
   const match = document.body.innerText.match(
@@ -43,20 +45,22 @@ async function extractProjectSyncUrl(): Promise<string | null> {
   );
 
   if (match) {
-    cachedProjectSyncUrl = match[1];
+    const syncUrl = match[1];
+    cachedProjectSyncUrls.set(currentUrl, syncUrl);
     showSyncOverlayButton(); // Show the overlay button when the URL is set
-    return cachedProjectSyncUrl;
+    return syncUrl;
   }
 
   return requestProjectSyncUrlFromUser();
 }
 
 function requestProjectSyncUrlFromUser(): Promise<string | null> {
+  const currentUrl = window.location.href;
   const dialogHtml = `
     <dialog id="codespin-dialog" style="width: 400px; background-color: black; color: #ccc; border-radius: 8px; padding: 20px; border: solid #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);">
       <label for="codespin-url">Project sync url:</label><br>
       <input type="text" id="codespin-url" name="codespin-url" style="width: 100%; color: black; margin-top: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;" required value="${
-        cachedProjectSyncUrl || ""
+        cachedProjectSyncUrls.get(currentUrl) || ""
       }"><br><br>
       <button id="codespin-submit" style="background-color: green; color: white; padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
       <button id="codespin-cancel" style="background-color: #f44336; color: white; padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Cancel</button>
@@ -74,15 +78,15 @@ function requestProjectSyncUrlFromUser(): Promise<string | null> {
     document.getElementById("codespin-submit")!.onclick = () => {
       const url = (document.getElementById("codespin-url") as HTMLInputElement)
         .value;
-      cachedProjectSyncUrl = url || null;
+      cachedProjectSyncUrls.set(currentUrl, url || null);
       dialog.close();
       dialog.remove();
-      if (cachedProjectSyncUrl) {
+      if (url) {
         showSyncOverlayButton(); // Show the overlay button when the URL is set
       } else {
         removeSyncOverlayButton(); // Remove the overlay button when the URL is cleared
       }
-      resolve(cachedProjectSyncUrl);
+      resolve(url);
     };
 
     document.getElementById("codespin-cancel")!.onclick = () => {
