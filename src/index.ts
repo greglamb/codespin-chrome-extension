@@ -13,7 +13,7 @@ function start() {
   }
 
   if (app === "CHATGPT") {
-    chatGPT.attachLinksForChatGPT();
+    chatGPT.attachCodeSpinLinks();
   }
 }
 

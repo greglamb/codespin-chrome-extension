@@ -1,7 +1,8 @@
 import { CodeSpinButtonHtml } from "./CodeSpinButtonHtml.js";
 import { writeFile } from "./writeFile.js";
 
-let cachedProjectSyncUrls: Map<string, string | null> = new Map(); // In-memory cache for project sync URLs keyed by page URL
+let projectSyncUrls: Map<string, string | null> = new Map(); // In-memory store for project sync URLs keyed by page URL
+
 let buttonPosition = {
   left: "auto",
   top: "auto",
@@ -36,8 +37,8 @@ function findFilePathInMarkdownProse(element: HTMLElement): string | null {
 async function extractProjectSyncUrl(): Promise<string | null> {
   const currentUrl = window.location.href;
 
-  if (cachedProjectSyncUrls.has(currentUrl)) {
-    return cachedProjectSyncUrls.get(currentUrl) || null;
+  if (projectSyncUrls.has(currentUrl)) {
+    return projectSyncUrls.get(currentUrl) || null;
   }
 
   const match = document.body.innerText.match(
@@ -46,7 +47,7 @@ async function extractProjectSyncUrl(): Promise<string | null> {
 
   if (match) {
     const syncUrl = match[1];
-    cachedProjectSyncUrls.set(currentUrl, syncUrl);
+    projectSyncUrls.set(currentUrl, syncUrl);
     showSyncOverlayButton(); // Show the overlay button when the URL is set
     return syncUrl;
   }
@@ -60,7 +61,7 @@ function requestProjectSyncUrlFromUser(): Promise<string | null> {
     <dialog id="codespin-dialog" style="width: 400px; background-color: black; color: #ccc; border-radius: 8px; padding: 20px; border: solid #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);">
       <label for="codespin-url">Project sync url:</label><br>
       <input type="text" id="codespin-url" name="codespin-url" style="width: 100%; color: black; margin-top: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;" required value="${
-        cachedProjectSyncUrls.get(currentUrl) || ""
+        projectSyncUrls.get(currentUrl) || ""
       }"><br><br>
       <button id="codespin-submit" style="background-color: green; color: white; padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
       <button id="codespin-cancel" style="background-color: #f44336; color: white; padding: 4px 12px; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Cancel</button>
@@ -78,7 +79,7 @@ function requestProjectSyncUrlFromUser(): Promise<string | null> {
     document.getElementById("codespin-submit")!.onclick = () => {
       const url = (document.getElementById("codespin-url") as HTMLInputElement)
         .value;
-      cachedProjectSyncUrls.set(currentUrl, url || null);
+      projectSyncUrls.set(currentUrl, url || null);
       dialog.close();
       dialog.remove();
       if (url) {
@@ -102,24 +103,24 @@ function showSyncOverlayButton() {
 
   if (!overlayButton) {
     const buttonHtml = `
-      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: blue; color: white; padding: 10px 20px; border: none; border-radius: 50px; cursor: pointer; z-index: 1000;">
-        Syncing...
+      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 50px; cursor: pointer; z-index: 1000;">
+        Syncing
       </button>
     `;
     document.body.insertAdjacentHTML("beforeend", buttonHtml);
 
     overlayButton = document.getElementById("codespin-overlay-button");
 
+    overlayButton!.onclick = () => {
+      if (!wasDragged) {
+        requestProjectSyncUrlFromUser();
+      }
+      wasDragged = false; // Reset after handling click
+    };
+
     // Make the button draggable
     makeButtonDraggable(overlayButton!);
   }
-
-  overlayButton!.onclick = () => {
-    if (!wasDragged) {
-      requestProjectSyncUrlFromUser();
-    }
-    wasDragged = false; // Reset after handling click
-  };
 }
 
 function removeSyncOverlayButton() {
@@ -197,7 +198,7 @@ async function handleCodeSpinSyncClick(
   }
 }
 
-async function attachChatGPTButton(preElement: HTMLElement) {
+async function attachSyncButton(preElement: HTMLElement) {
   const filePath = findFilePathInMarkdownProse(preElement);
 
   if (filePath) {
@@ -221,21 +222,27 @@ async function attachChatGPTButton(preElement: HTMLElement) {
   }
 }
 
-export function attachLinksForChatGPT() {
+export function attachCodeSpinLinks() {
+  if (projectSyncUrls.has(window.location.href)) {
+    showSyncOverlayButton();
+  } else {
+    removeSyncOverlayButton();
+  }
+
   const codeBlocks = document.querySelectorAll("pre");
 
   codeBlocks.forEach((preElement) => {
-    if (!(preElement as any).attachedCodespinLink) {
-      attachChatGPTButton(preElement as HTMLElement);
-      (preElement as any).attachedCodespinLink = true;
+    if (!(preElement as any).attachedCodeSpinLink) {
+      attachSyncButton(preElement as HTMLElement);
+      (preElement as any).attachedCodeSpinLink = true;
     }
   });
 }
 
 setTimeout(() => {
-  attachLinksForChatGPT();
+  attachCodeSpinLinks();
 }, 1000);
 
 setInterval(() => {
-  attachLinksForChatGPT();
+  attachCodeSpinLinks();
 }, 3000);
