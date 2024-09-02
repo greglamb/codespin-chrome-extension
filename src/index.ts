@@ -5,7 +5,7 @@ function start() {
 
   function getDomain(): "CHATGPT" | "CLAUDE" | undefined {
     const hostname = window.location.hostname;
-    if (hostname === "chat.openai.com") {
+    if (hostname === "chat.openai.com" || hostname === "chatgpt.com") {
       return "CHATGPT" as const;
     } else if (hostname === "claude.ai") {
       return "CLAUDE" as const;

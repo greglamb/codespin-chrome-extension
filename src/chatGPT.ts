@@ -1,7 +1,14 @@
-import { writeFile } from "./writeFile.js";
 import { CodeSpinButtonHtml } from "./CodeSpinButtonHtml.js";
+import { writeFile } from "./writeFile.js";
 
 let cachedProjectSyncUrl: string | null = null; // In-memory cache for the project sync URL
+let buttonPosition = {
+  left: "auto",
+  top: "auto",
+  bottom: "20px",
+  right: "20px",
+}; // Default to bottom-right
+let wasDragged = false; // Global flag to detect if the button was dragged
 
 function findFilePathInMarkdownProse(element: HTMLElement): string | null {
   let sibling = element.previousElementSibling as HTMLElement | null;
@@ -91,17 +98,23 @@ function showSyncOverlayButton() {
 
   if (!overlayButton) {
     const buttonHtml = `
-      <button id="codespin-overlay-button" style="position: fixed; bottom: 20px; right: 20px; background-color: blue; color: white; padding: 10px 20px; border: none; border-radius: 50px; cursor: pointer; z-index: 1000;">
+      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: blue; color: white; padding: 10px 20px; border: none; border-radius: 50px; cursor: pointer; z-index: 1000;">
         Syncing...
       </button>
     `;
     document.body.insertAdjacentHTML("beforeend", buttonHtml);
 
     overlayButton = document.getElementById("codespin-overlay-button");
+
+    // Make the button draggable
+    makeButtonDraggable(overlayButton!);
   }
 
   overlayButton!.onclick = () => {
-    requestProjectSyncUrlFromUser();
+    if (!wasDragged) {
+      requestProjectSyncUrlFromUser();
+    }
+    wasDragged = false; // Reset after handling click
   };
 }
 
@@ -110,6 +123,52 @@ function removeSyncOverlayButton() {
   if (overlayButton) {
     overlayButton.remove();
   }
+}
+
+function makeButtonDraggable(button: HTMLElement) {
+  let offsetX: number;
+  let offsetY: number;
+  let isDragging = false;
+  let initialX: number;
+  let initialY: number;
+
+  button.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    initialX = e.clientX;
+    initialY = e.clientY;
+    offsetX = e.clientX - button.getBoundingClientRect().left;
+    offsetY = e.clientY - button.getBoundingClientRect().top;
+    button.style.cursor = "grabbing";
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      const deltaX = e.clientX - initialX;
+      const deltaY = e.clientY - initialY;
+
+      if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+        wasDragged = true; // Set flag to indicate the button was dragged
+      }
+
+      button.style.left = `${e.clientX - offsetX}px`;
+      button.style.top = `${e.clientY - offsetY}px`;
+      button.style.bottom = "auto"; // Disable bottom positioning when dragging
+      button.style.right = "auto"; // Disable right positioning when dragging
+    }
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (isDragging) {
+      isDragging = false;
+      button.style.cursor = "pointer";
+
+      // Save the current position
+      buttonPosition.left = button.style.left;
+      buttonPosition.top = button.style.top;
+      buttonPosition.bottom = button.style.bottom;
+      buttonPosition.right = button.style.right;
+    }
+  });
 }
 
 async function handleCodeSpinSyncClick(
