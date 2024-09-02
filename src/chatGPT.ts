@@ -1,10 +1,15 @@
-import { sendCodeToIDE } from "./core.js";
+import { writeFile } from "./writeFile.js";
 import { CodeSpinButtonHtml } from "./CodeSpinButtonHtml.js";
 
 function findFilePathInMarkdownProse(element: HTMLElement): string | null {
   let sibling = element.previousElementSibling as HTMLElement | null;
 
   while (sibling) {
+    // Stop searching if the sibling is a <pre> element
+    if (sibling.tagName.toLowerCase() === "pre") {
+      return null;
+    }
+
     const textContent = sibling.textContent || "";
     const filePathMatch = textContent.match(
       /File path:\s*["'`]?(.+?)["'`]?(\n|$)/
@@ -20,26 +25,65 @@ function findFilePathInMarkdownProse(element: HTMLElement): string | null {
   return null;
 }
 
-// Function to extract the project root from the HTML
-function extractProjectRoot(): string | null {
-  const rootMatch = document.body.innerText.match(
-    /The project root is "(.*?)"/
+async function extractProjectSyncUrl(): Promise<string | null> {
+  const match = document.body.innerText.match(
+    /The project's sync url is "(https?:\/\/[^\s]+)"/
   );
-  return rootMatch ? rootMatch[1] : null;
+
+  if (match) {
+    return match[1];
+  }
+
+  // If not found, ask the user to input the URL
+  return requestProjectSyncUrlFromUser();
+}
+
+// Function to request project sync URL from the user via a dialog
+function requestProjectSyncUrlFromUser(): Promise<string | null> {
+  const dialogHtml = `
+    <dialog id="codespin-dialog" style="width: 400px; background-color: black; color: #ccc; border-radius: 8px; padding: 20px; border: solid #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);">
+      <label for="codespin-url">Project sync url:</label><br>
+      <input type="text" id="codespin-url" name="codespin-url" style="width: 100%; margin-top: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;" required><br><br>
+      <button id="codespin-submit" style="background-color: green; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+      <button id="codespin-cancel" style="background-color: #f44336; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Cancel</button>
+    </dialog>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", dialogHtml);
+
+  const dialog = document.getElementById(
+    "codespin-dialog"
+  ) as HTMLDialogElement;
+  dialog.showModal();
+
+  return new Promise<string | null>((resolve) => {
+    document.getElementById("codespin-submit")!.onclick = () => {
+      const url = (document.getElementById("codespin-url") as HTMLInputElement)
+        .value;
+      dialog.close();
+      dialog.remove();
+      resolve(url || null);
+    };
+
+    document.getElementById("codespin-cancel")!.onclick = () => {
+      dialog.close();
+      dialog.remove();
+      resolve(null);
+    };
+  });
 }
 
 // Separate function to handle the "CodeSpin Sync" button click
-function handleCodeSpinSyncClick(
+async function handleCodeSpinSyncClick(
   preElement: HTMLElement,
-  projectRoot: string,
   filePath: string
 ) {
+  const projectSyncUrl = await extractProjectSyncUrl();
   const codeText = preElement.querySelector("code")?.innerText || "";
 
-  if (projectRoot && filePath && codeText) {
+  if (projectSyncUrl && filePath && codeText) {
     const message = {
       type: "code",
-      projectPath: projectRoot,
       filePath: filePath,
       contents: codeText,
     };
@@ -48,39 +92,35 @@ function handleCodeSpinSyncClick(
       console.log({ message });
     }
 
-    sendCodeToIDE(message);
+    writeFile(projectSyncUrl, message);
   }
 }
 
 // Function to attach the "CodeSpin Sync" button specifically for ChatGPT
-function attachChatGPTButton(preElement: HTMLElement) {
+async function attachChatGPTButton(preElement: HTMLElement) {
   const filePath = findFilePathInMarkdownProse(preElement);
 
   if (filePath) {
-    const projectRoot = extractProjectRoot();
+    // Find the "Copy code" button container to attach the CodeSpin Sync button
+    const copyButtonContainer = preElement.querySelector(
+      "div > div > div > span > button"
+    )?.parentElement?.parentElement;
 
-    if (projectRoot) {
-      // Find the "Copy code" button container to attach the CodeSpin Sync button
-      const copyButtonContainer = preElement.querySelector(
-        "div > div > div > span > button"
-      )?.parentElement?.parentElement;
+    if (copyButtonContainer) {
+      // Convert the CodeSpinButtonHtml string to a DOM element
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(CodeSpinButtonHtml, "text/html");
+      const codeSpinButtonElement = doc.body.firstChild as HTMLElement;
 
-      if (copyButtonContainer) {
-        // Convert the CodeSpinButtonHtml string to a DOM element
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(CodeSpinButtonHtml, "text/html");
-        const codeSpinButtonElement = doc.body.firstChild as HTMLElement;
+      // Attach the click event using the separate function
+      codeSpinButtonElement.onclick = () =>
+        handleCodeSpinSyncClick(preElement, filePath);
 
-        // Attach the click event using the separate function
-        codeSpinButtonElement.onclick = () =>
-          handleCodeSpinSyncClick(preElement, projectRoot, filePath);
-
-        // Insert the CodeSpin Sync button before the "Copy code" button
-        copyButtonContainer.parentElement?.insertBefore(
-          codeSpinButtonElement,
-          copyButtonContainer
-        );
-      }
+      // Insert the CodeSpin Sync button before the "Copy code" button
+      copyButtonContainer.parentElement?.insertBefore(
+        codeSpinButtonElement,
+        copyButtonContainer
+      );
     }
   }
 }
@@ -88,13 +128,6 @@ function attachChatGPTButton(preElement: HTMLElement) {
 // Function to scan and attach buttons to code blocks in ChatGPT
 export function attachLinksForChatGPT() {
   const codeBlocks = document.querySelectorAll("pre");
-
-  // Extract the project root from the HTML content
-  const projectRoot = extractProjectRoot();
-
-  if (!projectRoot) {
-    return;
-  }
 
   codeBlocks.forEach((preElement) => {
     if (!(preElement as any).attachedCodespinLink) {
