@@ -1,5 +1,7 @@
 import { showSyncUrlDialog } from "./syncUrlDialog.js";
 
+type ConnectionState = "connected" | "disconnected";
+
 let buttonPosition = {
   left: "auto",
   top: "auto",
@@ -8,9 +10,10 @@ let buttonPosition = {
 };
 
 let wasDragged = false;
-let useSmallOverlay = false;
-let buttonBgColor = "green";
-let buttonText = "CodeSpin Syncing";
+let useSmallOverlay = false; // Memory for overlay size, persists until page refresh
+let buttonBgColor = "green"; // Memory for button background color
+let buttonText = "CodeSpin Syncing"; // Memory for button text
+let connectionState: ConnectionState = "connected"; // Connection state
 
 export function setOverlaySize(smallOverlay: boolean) {
   useSmallOverlay = smallOverlay;
@@ -20,6 +23,15 @@ export function setOverlaySize(smallOverlay: boolean) {
 export function setButtonBgColor(color: string) {
   buttonBgColor = color || "green";
   updateSyncStatusButton();
+}
+
+export function setConnectionState(state: ConnectionState) {
+  connectionState = state;
+  updateSyncStatusButton();
+}
+
+export function getConnectionState(): ConnectionState {
+  return connectionState;
 }
 
 export function setButtonText(text: string) {
@@ -48,13 +60,22 @@ function updateSyncStatusButton() {
 export function showSyncStatusButton() {
   let overlayButton = document.getElementById("codespin-overlay-button");
 
+  const displayText =
+    connectionState === "connected"
+      ? buttonText
+      : useSmallOverlay
+      ? "Not Connected"
+      : "CodeSpin Not Connected";
+
+  const displayColor = connectionState === "connected" ? buttonBgColor : "gray";
+
   if (!overlayButton) {
     const buttonSizeStyle = useSmallOverlay
       ? "padding: 2px 8px; font-size: 0.7em;"
       : "padding: 4px 16px; font-size: 0.9em;";
     const buttonHtml = `
-      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: ${buttonBgColor}; color: white; ${buttonSizeStyle} border: none; border-radius: 20px; cursor: pointer; z-index: 1000;">
-        ${buttonText}
+      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: ${displayColor}; color: white; ${buttonSizeStyle} border: none; border-radius: 20px; cursor: pointer; z-index: 1000;">
+        ${displayText}
       </button>
     `;
     document.body.insertAdjacentHTML("beforeend", buttonHtml);

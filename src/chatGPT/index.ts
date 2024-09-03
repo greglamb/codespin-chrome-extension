@@ -1,14 +1,9 @@
 import { attachSyncButton } from "./syncButton";
-import {
-  showSyncStatusButton,
-  setButtonBgColor,
-  setButtonText,
-} from "./syncStatusButton";
+import { setConnectionState } from "./syncStatusButton";
 import { getProjectSyncUrl } from "./projectSyncUrls";
 
 async function checkSyncUrl(url: string): Promise<boolean> {
   if (!url) {
-    // If the URL is an empty string or null, return false immediately
     return false;
   }
   try {
@@ -25,20 +20,14 @@ export async function attachCodeSpinLinks() {
   const syncUrl = getProjectSyncUrl(currentUrl);
 
   if (!syncUrl || syncUrl.trim() === "") {
-    // If there's no sync URL or it's an empty string, update the button to "Not Connected"
-    setButtonBgColor("gray");
-    setButtonText("Not Connected");
-    showSyncStatusButton();
+    setConnectionState("disconnected");
   } else {
     const isValid = await checkSyncUrl(syncUrl);
     if (!isValid) {
-      setButtonBgColor("gray");
-      setButtonText("Not Connected");
+      setConnectionState("disconnected");
     } else {
-      setButtonBgColor("green");
-      setButtonText("CodeSpin Syncing");
+      setConnectionState("connected");
     }
-    showSyncStatusButton();
   }
 
   const codeBlocks = document.querySelectorAll("pre");
