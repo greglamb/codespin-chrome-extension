@@ -8,14 +8,23 @@ let buttonPosition = {
 };
 
 let wasDragged = false;
+let useSmallOverlay = false;  // Memory for overlay size, persists until page refresh
+
+export function setOverlaySize(smallOverlay: boolean) {
+  useSmallOverlay = smallOverlay;
+  removeSyncOverlayButton(); // Remove existing button to update size
+  showSyncStatusButton();    // Recreate the button with the new size
+}
 
 export function showSyncStatusButton() {
   let overlayButton = document.getElementById("codespin-overlay-button");
 
   if (!overlayButton) {
+    const buttonText = useSmallOverlay ? "Sync" : "CodeSpin Syncing";
+    const buttonSizeStyle = useSmallOverlay ? "padding: 2px 8px; font-size: 0.7em;" : "padding: 4px 16px; font-size: 0.9em;";
     const buttonHtml = `
-      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: green; color: white; padding: 4px 16px; border: none; border-radius: 20px; cursor: pointer; z-index: 1000; font-size: 0.9em">
-        CodeSpin Syncing
+      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: green; color: white; ${buttonSizeStyle} border: none; border-radius: 20px; cursor: pointer; z-index: 1000;">
+        ${buttonText}
       </button>
     `;
     document.body.insertAdjacentHTML("beforeend", buttonHtml);
