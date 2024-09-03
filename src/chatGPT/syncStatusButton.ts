@@ -9,11 +9,30 @@ let buttonPosition = {
 
 let wasDragged = false;
 let useSmallOverlay = false;  // Memory for overlay size, persists until page refresh
+let buttonBgColor = "green";  // Memory for button background color
 
 export function setOverlaySize(smallOverlay: boolean) {
   useSmallOverlay = smallOverlay;
-  removeSyncOverlayButton(); // Remove existing button to update size
-  showSyncStatusButton();    // Recreate the button with the new size
+  updateSyncStatusButton();
+}
+
+export function setButtonBgColor(color: string) {
+  buttonBgColor = color || "green";
+  updateSyncStatusButton();
+}
+
+// Getter functions to retrieve the current values
+export function getOverlaySize(): boolean {
+  return useSmallOverlay;
+}
+
+export function getButtonBgColor(): string {
+  return buttonBgColor;
+}
+
+function updateSyncStatusButton() {
+  removeSyncOverlayButton(); // Remove existing button to update size and color
+  showSyncStatusButton();    // Recreate the button with the new size and color
 }
 
 export function showSyncStatusButton() {
@@ -23,7 +42,7 @@ export function showSyncStatusButton() {
     const buttonText = useSmallOverlay ? "Sync" : "CodeSpin Syncing";
     const buttonSizeStyle = useSmallOverlay ? "padding: 2px 8px; font-size: 0.7em;" : "padding: 4px 16px; font-size: 0.9em;";
     const buttonHtml = `
-      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: green; color: white; ${buttonSizeStyle} border: none; border-radius: 20px; cursor: pointer; z-index: 1000;">
+      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: ${buttonBgColor}; color: white; ${buttonSizeStyle} border: none; border-radius: 20px; cursor: pointer; z-index: 1000;">
         ${buttonText}
       </button>
     `;
