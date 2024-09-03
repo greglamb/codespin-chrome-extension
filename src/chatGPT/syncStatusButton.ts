@@ -8,8 +8,9 @@ let buttonPosition = {
 };
 
 let wasDragged = false;
-let useSmallOverlay = false;  // Memory for overlay size, persists until page refresh
-let buttonBgColor = "green";  // Memory for button background color
+let useSmallOverlay = false;
+let buttonBgColor = "green";
+let buttonText = "CodeSpin Syncing";
 
 export function setOverlaySize(smallOverlay: boolean) {
   useSmallOverlay = smallOverlay;
@@ -18,6 +19,11 @@ export function setOverlaySize(smallOverlay: boolean) {
 
 export function setButtonBgColor(color: string) {
   buttonBgColor = color || "green";
+  updateSyncStatusButton();
+}
+
+export function setButtonText(text: string) {
+  buttonText = text || "CodeSpin Syncing";
   updateSyncStatusButton();
 }
 
@@ -30,17 +36,22 @@ export function getButtonBgColor(): string {
   return buttonBgColor;
 }
 
+export function getButtonText(): string {
+  return buttonText;
+}
+
 function updateSyncStatusButton() {
-  removeSyncOverlayButton(); // Remove existing button to update size and color
-  showSyncStatusButton();    // Recreate the button with the new size and color
+  removeSyncOverlayButton(); // Remove existing button to update size, color, and text
+  showSyncStatusButton(); // Recreate the button with the new size, color, and text
 }
 
 export function showSyncStatusButton() {
   let overlayButton = document.getElementById("codespin-overlay-button");
 
   if (!overlayButton) {
-    const buttonText = useSmallOverlay ? "Sync" : "CodeSpin Syncing";
-    const buttonSizeStyle = useSmallOverlay ? "padding: 2px 8px; font-size: 0.7em;" : "padding: 4px 16px; font-size: 0.9em;";
+    const buttonSizeStyle = useSmallOverlay
+      ? "padding: 2px 8px; font-size: 0.7em;"
+      : "padding: 4px 16px; font-size: 0.9em;";
     const buttonHtml = `
       <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: ${buttonBgColor}; color: white; ${buttonSizeStyle} border: none; border-radius: 20px; cursor: pointer; z-index: 1000;">
         ${buttonText}
