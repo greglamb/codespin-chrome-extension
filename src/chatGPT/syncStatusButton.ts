@@ -1,6 +1,4 @@
-import { showSyncUrlDialog } from "./syncUrlDialog.js";
-import { showPromptDialog } from "./promptDialog.js";
-import { showOptionsDialog } from "./optionsDialog.js";
+import { toggleMenu } from "./menu.js";
 
 type ConnectionState = "connected" | "disconnected";
 
@@ -96,54 +94,13 @@ export function showSyncStatusButton() {
     overlayButton!.onclick = (e) => {
       e.stopPropagation();
       if (!wasDragged) {
-        toggleMenu(overlayButton!);
+        toggleMenu(overlayButton!, e.clientX, e.clientY);
       }
       wasDragged = false;
     };
 
     makeButtonDraggable(overlayButton!);
   }
-}
-
-function toggleMenu(button: HTMLElement) {
-  const existingMenu = document.getElementById("codespin-menu");
-  if (existingMenu) {
-    existingMenu.remove();
-    return;
-  }
-
-  const menuHtml = `
-    <div id="codespin-menu" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; background-color: white; color: black; border: 1px solid #ccc; border-radius: 4px; z-index: 1001; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);">
-      <ul style="list-style-type: none; margin: 0; padding: 0;">
-        <li style="padding: 8px; cursor: pointer; border-bottom: 1px solid #ccc;" id="codespin-prompt">Prompt</li>
-        <li style="padding: 8px; cursor: pointer; border-bottom: 1px solid #ccc;" id="codespin-set-sync-url">Set Sync Url</li>
-        <li style="padding: 8px; cursor: pointer;" id="codespin-options">Options</li>
-      </ul>
-    </div>
-  `;
-  document.body.insertAdjacentHTML("beforeend", menuHtml);
-
-  document.getElementById("codespin-prompt")!.onclick = () => {
-    showPromptDialog();
-    closeMenu();
-  };
-  document.getElementById("codespin-set-sync-url")!.onclick = () => {
-    showSyncUrlDialog();
-    closeMenu();
-  };
-  document.getElementById("codespin-options")!.onclick = () => {
-    showOptionsDialog();
-    closeMenu();
-  };
-
-  function closeMenu() {
-    const menu = document.getElementById("codespin-menu");
-    if (menu) {
-      menu.remove();
-    }
-  }
-
-  document.addEventListener("click", closeMenu, { once: true });
 }
 
 export function removeSyncOverlayButton() {
