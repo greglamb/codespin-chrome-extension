@@ -10,18 +10,28 @@ let buttonPosition = {
 };
 
 let wasDragged = false;
-let useSmallOverlay = false; // Memory for overlay size, persists until page refresh
-let buttonBgColor = "green"; // Memory for button background color
-let buttonText = "CodeSpin Syncing"; // Memory for button text
-let connectionState: ConnectionState = "connected"; // Connection state
+let useSmallOverlay = false;
+let buttonBgColor = "green";
+let buttonText = "CodeSpin Syncing";
+let connectionState: ConnectionState = "connected";
+
+// Load settings from chrome storage
+chrome.storage.local.get(["useSmallOverlay", "buttonBgColor"], (result) => {
+  useSmallOverlay =
+    result.useSmallOverlay !== undefined ? result.useSmallOverlay : false;
+  buttonBgColor = result.buttonBgColor || "green";
+  updateSyncStatusButton();
+});
 
 export function setOverlaySize(smallOverlay: boolean) {
   useSmallOverlay = smallOverlay;
+  saveOverlaySize(useSmallOverlay);
   updateSyncStatusButton();
 }
 
 export function setButtonBgColor(color: string) {
   buttonBgColor = color || "green";
+  saveButtonBgColor(buttonBgColor);
   updateSyncStatusButton();
 }
 
@@ -39,7 +49,6 @@ export function setButtonText(text: string) {
   updateSyncStatusButton();
 }
 
-// Getter functions to retrieve the current values
 export function getOverlaySize(): boolean {
   return useSmallOverlay;
 }
@@ -53,8 +62,8 @@ export function getButtonText(): string {
 }
 
 function updateSyncStatusButton() {
-  removeSyncOverlayButton(); // Remove existing button to update size, color, and text
-  showSyncStatusButton(); // Recreate the button with the new size, color, and text
+  removeSyncOverlayButton();
+  showSyncStatusButton();
 }
 
 export function showSyncStatusButton() {
@@ -143,4 +152,12 @@ function makeButtonDraggable(button: HTMLElement) {
       buttonPosition.right = button.style.right;
     }
   });
+}
+
+function saveOverlaySize(smallOverlay: boolean) {
+  chrome.storage.local.set({ useSmallOverlay: smallOverlay });
+}
+
+function saveButtonBgColor(color: string) {
+  chrome.storage.local.set({ buttonBgColor: color });
 }
