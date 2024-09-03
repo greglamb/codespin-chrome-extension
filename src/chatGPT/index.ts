@@ -1,14 +1,9 @@
-import { showSyncStatusButton, removeSyncOverlayButton } from './syncStatusButton';
 import { attachSyncButton } from './syncButton';
-import { projectSyncUrls } from './projectSyncUrls';
+import { showSyncStatusButton } from './syncStatusButton';
 
 export function attachCodeSpinLinks() {
-  if (projectSyncUrls.has(window.location.href)) {
-    showSyncStatusButton();
-  } else {
-    removeSyncOverlayButton();
-  }
-
+  showSyncStatusButton();
+  
   const codeBlocks = document.querySelectorAll("pre");
 
   codeBlocks.forEach((preElement) => {

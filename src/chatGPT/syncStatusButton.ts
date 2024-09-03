@@ -14,8 +14,8 @@ export function showSyncStatusButton() {
 
   if (!overlayButton) {
     const buttonHtml = `
-      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 50px; cursor: pointer; z-index: 1000;">
-        Syncing
+      <button id="codespin-overlay-button" style="position: fixed; bottom: ${buttonPosition.bottom}; left: ${buttonPosition.left}; right: ${buttonPosition.right}; top: ${buttonPosition.top}; background-color: green; color: white; padding: 4px 16px; border: none; border-radius: 20px; cursor: pointer; z-index: 1000; font-size: 0.9em">
+        CodeSpin Syncing
       </button>
     `;
     document.body.insertAdjacentHTML("beforeend", buttonHtml);

@@ -20,7 +20,7 @@ export async function writeFile(
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to send code to IDE: ${response.statusText}`);
+      throw new Error(`Failed to sync on ${url}: ${response.statusText}`);
     }
 
     const responseData = await response.json();
