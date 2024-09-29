@@ -1,15 +1,14 @@
-import { showSyncStatusButton } from "./syncStatusButton.js";
-import { getProjectSyncUrl, setProjectSyncUrl } from "./projectSyncUrls.js";
-import { showSyncUrlDialog } from "./syncUrlDialog.js";
-
+/**
+ * Extracts the file path from the content of a sibling element preceding the provided element.
+ * The function searches for a specific pattern: "File path: {path}" in the sibling elements.
+ *
+ * @param element - The DOM element whose preceding sibling contains the file path information.
+ * @returns The extracted file path as a string or null if no file path is found.
+ */
 export function extractFilePath(element: HTMLElement): string | null {
   let sibling = element.previousElementSibling as HTMLElement | null;
 
   while (sibling) {
-    if (sibling.tagName.toLowerCase() === "pre") {
-      return null;
-    }
-
     const textContent = sibling.textContent || "";
     const filePathMatch = textContent.match(
       /File path:\s*["'`]?(.+?)["'`]?(\n|$)/
@@ -23,25 +22,4 @@ export function extractFilePath(element: HTMLElement): string | null {
   }
 
   return null;
-}
-
-export async function extractSyncUrl(): Promise<string | null> {
-  const currentUrl = window.location.href;
-
-  if (getProjectSyncUrl(currentUrl)) {
-    return getProjectSyncUrl(currentUrl);
-  }
-
-  const match = document.body.innerText.match(
-    /The project's sync url is "(https?:\/\/[^\s]+)"/
-  );
-
-  if (match) {
-    const syncUrl = match[1];
-    setProjectSyncUrl(currentUrl, syncUrl);
-    showSyncStatusButton();
-    return syncUrl;
-  }
-
-  return showSyncUrlDialog();
 }

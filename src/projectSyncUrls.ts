@@ -10,3 +10,4 @@ export function setProjectSyncUrl(
 ): void {
   projectSyncUrls.set(currentUrl, url);
 }
+

@@ -22,5 +22,8 @@
     "@types/chrome": "^0.0.146",
     "esbuild": "^0.21.4",
     "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "webjsx": "^0.0.18"
   }
 }

@@ -20,6 +20,8 @@ function start() {
     setInterval(() => {
       chatGPT.attachCodeSpinLinks();
     }, 3000);
+  } else {
+    throw new Error("Only ChatGPT is supported now.");
   }
 }
 
