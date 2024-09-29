@@ -12,7 +12,6 @@ class SyncStatusButton extends HTMLElement {
   private connectionState: string = "disconnected";
   private useSmallOverlay: boolean = false;
   private buttonBgColor: string = "green";
-  private buttonText: string = "CodeSpin Syncing";
 
   constructor() {
     super();

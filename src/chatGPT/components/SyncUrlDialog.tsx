@@ -3,6 +3,10 @@ import { applyDiff } from "webjsx";
 import { getProjectSyncUrl, setProjectSyncUrl } from "../../projectSyncUrls.js";
 import * as syncStatusStore from "../../syncStatusStore.js"; // Assume sync status logic is now in the store
 
+export type SyncUrlDialogProps = {
+  syncUrl?: string;
+};
+
 class SyncUrlDialog extends HTMLElement {
   constructor() {
     super();

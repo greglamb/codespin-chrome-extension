@@ -1,10 +1,9 @@
 // ./src/chatGPT/components/SyncButton.tsx
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
+import { getProjectSyncUrl } from "../../projectSyncUrls.js"; // Use the projectSyncUrls module
 import { writeFile } from "../../writeFile.js";
 import { extractFilePath } from "../domExtractions.js";
-import { getProjectSyncUrl } from "../../projectSyncUrls.js"; // Use the projectSyncUrls module
-import * as syncStatusStore from "../../syncStatusStore.js";
 
 class SyncButton extends HTMLElement {
   private preElement: HTMLElement | undefined;
@@ -60,7 +59,6 @@ class SyncButton extends HTMLElement {
   async handleClick() {
     if (!this.filePath) {
       alert("File path not found.");
-      syncStatusStore.setConnectionState("disconnected");
       return;
     }
 
@@ -77,15 +75,12 @@ class SyncButton extends HTMLElement {
       try {
         await writeFile(projectSyncUrl, message);
         alert("Sync successful!");
-        syncStatusStore.setConnectionState("connected");
       } catch (error) {
         console.error("Error syncing file:", error);
         alert("Sync failed. Please check the console for more details.");
-        syncStatusStore.setConnectionState("disconnected");
       }
     } else {
       alert("Sync URL or code is missing.");
-      syncStatusStore.setConnectionState("disconnected");
     }
   }
 }

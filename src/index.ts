@@ -14,16 +14,15 @@ function start() {
 
   if (app === "CHATGPT") {
     setTimeout(() => {
+      chatGPT.initializeCodeSpin();
       chatGPT.attachCodeSpinLinks();
     }, 1000);
-
-    setInterval(() => {
-      chatGPT.attachCodeSpinLinks();
-    }, 3000);
   } else {
     throw new Error("Only ChatGPT is supported now.");
   }
 }
 
 // Start the application
-start();
+document.addEventListener("DOMContentLoaded", function () {
+  start();
+});

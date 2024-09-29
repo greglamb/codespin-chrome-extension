@@ -1,17 +1,16 @@
 import "webjsx";
+import { MenuComponentProps } from "./components/Menu.js";
+import { SyncUrlDialogProps } from "./components/SyncUrlDialog.js";
 
-declare namespace JSX {
-  interface IntrinsicElements {
-    "codespin-sync-status-button": {};
-    "codespin-sync-button": {};
-    "codespin-options-dialog": {};
-    "codespin-prompt-dialog": {};
-    "codespin-sync-url-dialog": {
-      currentSyncUrl?: string;
-    };
-    "codespin-menu": {
-      left?: number;
-      bottom?: number;
-    };
+declare module "webjsx" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "codespin-sync-status-button": {};
+      "codespin-sync-button": {};
+      "codespin-options-dialog": {};
+      "codespin-prompt-dialog": {};
+      "codespin-sync-url-dialog": SyncUrlDialogProps;
+      "codespin-menu": MenuComponentProps
+    }
   }
 }

@@ -4,24 +4,10 @@ import "./OptionsDialog.js";
 import "./PromptDialog.js";
 import "./SyncUrlDialog.js";
 
-declare module "webjsx" {
-  namespace JSX {
-    interface IntrinsicElements {
-      "codespin-sync-status-button": {};
-      "codespin-sync-button": {};
-      "codespin-options-dialog": {};
-      "codespin-prompt-dialog": {};
-      "codespin-sync-url-dialog": {
-        currentSyncUrl?: string;
-      };
-      "codespin-menu": {
-        left?: number;
-        bottom?: number;
-      };
-    }
-  }
-}
-
+export type MenuComponentProps = {
+  left?: number;
+  bottom?: number;
+};
 
 class MenuComponent extends HTMLElement {
   private left: number;
@@ -105,19 +91,19 @@ class MenuComponent extends HTMLElement {
   }
 
   onPromptClick() {
-    const promptDialog = <codespin-prompt-dialog />;
+    const promptDialog = webjsx.createDomNode(<codespin-prompt-dialog />);
     document.body.appendChild(promptDialog);
     this.remove();
   }
 
   onSetSyncUrlClick() {
-    const syncUrlDialog = <codespin-sync-url-dialog />;
-    document.body.appendChild(syncUrlDialog);
+    const promptDialog = webjsx.createDomNode(<codespin-prompt-dialog />);
+    document.body.appendChild(promptDialog);
     this.remove();
   }
 
   onOptionsClick() {
-    const optionsDialog = <codespin-options-dialog />;
+    const optionsDialog = webjsx.createDomNode(<codespin-options-dialog />);
     document.body.appendChild(optionsDialog);
     this.remove();
   }

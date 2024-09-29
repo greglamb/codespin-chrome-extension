@@ -1,13 +1,14 @@
-import { checkSyncUrl } from "../networkUtils.js";
-import { getProjectSyncUrl } from "../projectSyncUrls.js";
-import * as syncStatusStore from "../syncStatusStore.js";
-
+import * as webjsx from "webjsx";
 import "./components/Menu.js";
 import "./components/OptionsDialog.js";
 import "./components/PromptDialog.js";
 import "./components/SyncButton.js";
 import "./components/SyncStatusButton.js";
 import "./components/SyncUrlDialog.js";
+
+import { checkSyncUrl } from "../networkUtils.js";
+import { getProjectSyncUrl } from "../projectSyncUrls.js";
+import * as syncStatusStore from "../syncStatusStore.js";
 
 /**
  * Attaches a sync button (codespin-sync-button) to a specific <pre> element.
@@ -22,7 +23,7 @@ function attachSyncButton(preElement: HTMLElement) {
     )?.parentElement?.parentElement;
 
     if (copyButtonContainer) {
-      const syncButton = document.createElement("codespin-sync-button");
+      const syncButton = webjsx.createDomNode(<codespin-sync-button />);
       copyButtonContainer.parentElement?.insertBefore(
         syncButton,
         copyButtonContainer
@@ -60,32 +61,24 @@ export async function attachCodeSpinLinks() {
   });
 }
 
+let initialized = false;
+
 /**
  * Initializes the CodeSpin functionality by setting up necessary components
  * and observers.
  */
 export function initializeCodeSpin() {
   // Initialize the Sync Status Button
-  const syncStatusButton = document.createElement(
-    "codespin-sync-status-button"
+  const syncStatusButton = webjsx.createDomNode(
+    <codespin-sync-status-button />
   );
   document.body.appendChild(syncStatusButton);
 
   // Initial attachment of CodeSpin links
   attachCodeSpinLinks();
 
-  // Set up a MutationObserver to handle dynamically added code blocks
-  const observer = new MutationObserver(() => {
-    attachCodeSpinLinks();
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
   // Optionally, set up periodic checks (if necessary)
   setInterval(() => {
     attachCodeSpinLinks();
   }, 3000);
 }
-
-// Automatically initialize CodeSpin when this module is imported
-initializeCodeSpin();

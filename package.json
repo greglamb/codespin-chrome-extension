@@ -24,6 +24,6 @@
     "typescript": "^4.5.2"
   },
   "dependencies": {
-    "webjsx": "^0.0.18"
+    "webjsx": "^0.0.20"
   }
 }
