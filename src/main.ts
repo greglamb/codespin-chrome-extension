@@ -22,7 +22,14 @@ function start() {
   }
 }
 
-// Start the application
-document.addEventListener("DOMContentLoaded", function () {
+function onAppLoad() {
   start();
-});
+}
+if (document.readyState === "loading") {
+  // The DOM is still loading, you can attach the DOMContentLoaded event listener
+  document.addEventListener("DOMContentLoaded", function () {
+    onAppLoad();
+  });
+} else {
+  onAppLoad();
+}

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc && node build.js",
+    "build": "cp src/index.js dist && node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,6 +24,6 @@
     "typescript": "^4.5.2"
   },
   "dependencies": {
-    "webjsx": "^0.0.20"
+    "webjsx": "^0.0.25"
   }
 }

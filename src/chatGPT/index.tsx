@@ -1,34 +1,24 @@
 import * as webjsx from "webjsx";
-import "./components/Menu.js";
-import "./components/OptionsDialog.js";
-import "./components/PromptDialog.js";
-import "./components/SyncButton.js";
-import "./components/SyncStatusButton.js";
-import "./components/SyncUrlDialog.js";
-
+import { SyncButton } from "./components/SyncButton.js";
 import { checkSyncUrl } from "../networkUtils.js";
 import { getProjectSyncUrl } from "../projectSyncUrls.js";
 import * as syncStatusStore from "../syncStatusStore.js";
 
 /**
- * Attaches a sync button (codespin-sync-button) to a specific <pre> element.
+ * Attaches a sync button (<codespin-sync-button>) to a specific <pre> element.
  * @param preElement The <pre> element to which the sync button will be attached.
  */
 function attachSyncButton(preElement: HTMLElement) {
-  const filePath = preElement.dataset.filePath || "";
+  const copyButtonContainer = preElement.querySelector(
+    "div > div > div > span > button"
+  )?.parentElement?.parentElement;
 
-  if (filePath) {
-    const copyButtonContainer = preElement.querySelector(
-      "div > div > div > span > button"
-    )?.parentElement?.parentElement;
-
-    if (copyButtonContainer) {
-      const syncButton = webjsx.createDomNode(<codespin-sync-button />);
-      copyButtonContainer.parentElement?.insertBefore(
-        syncButton,
-        copyButtonContainer
-      );
-    }
+  if (copyButtonContainer) {
+    const syncButton = webjsx.createNode(<codespin-sync-button />);
+    copyButtonContainer.parentElement?.insertBefore(
+      syncButton,
+      copyButtonContainer
+    );
   }
 }
 
@@ -61,19 +51,11 @@ export async function attachCodeSpinLinks() {
   });
 }
 
-let initialized = false;
-
 /**
  * Initializes the CodeSpin functionality by setting up necessary components
  * and observers.
  */
 export function initializeCodeSpin() {
-  // Initialize the Sync Status Button
-  const syncStatusButton = webjsx.createDomNode(
-    <codespin-sync-status-button />
-  );
-  document.body.appendChild(syncStatusButton);
-
   // Initial attachment of CodeSpin links
   attachCodeSpinLinks();
 
@@ -82,3 +64,6 @@ export function initializeCodeSpin() {
     attachCodeSpinLinks();
   }, 3000);
 }
+
+// Register the custom element for use
+customElements.define("codespin-sync-button", SyncButton);
