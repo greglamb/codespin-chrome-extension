@@ -1,5 +1,10 @@
 import * as webjsx from "webjsx";
-import { SyncButton } from "./components/SyncButton.js";
+import "side-drawer";
+
+import "./components/SyncButton.js";
+import "./components/SyncForm.js";
+import "./components/icons/SyncIcon.js";
+
 import { checkSyncUrl } from "../networkUtils.js";
 import { getProjectSyncUrl } from "../projectSyncUrls.js";
 import * as syncStatusStore from "../syncStatusStore.js";
@@ -64,6 +69,3 @@ export function initializeCodeSpin() {
     attachCodeSpinLinks();
   }, 3000);
 }
-
-// Register the custom element for use
-customElements.define("codespin-sync-button", SyncButton);

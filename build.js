@@ -10,5 +10,6 @@ esbuild
     platform: "browser",
     target: ["chrome58"],
     format: "iife",
+    external: [],
   })
   .catch(() => process.exit(1));

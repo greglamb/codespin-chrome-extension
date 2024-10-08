@@ -12,6 +12,5 @@
     "jsxFactory": "webjsx.createElement",
     "jsxFragmentFactory": "webjsx.Fragment"
   },
-  "include": ["./src/**/*"],
-  "exclude": ["./node_modules"]
+  "include": ["./src/**/*"]
 }
