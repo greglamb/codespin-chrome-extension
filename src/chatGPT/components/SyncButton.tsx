@@ -1,6 +1,8 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
-import { SyncForm } from "./SyncForm.js";
+import { getCookie } from "../../cookieUtils.js";
+import { connectToServer } from "../../networkUtils.js";
+import { Connection } from "./Connection.js";
 
 export class SyncButton extends HTMLElement {
   constructor() {
@@ -42,18 +44,47 @@ export class SyncButton extends HTMLElement {
   }
 
   handleClick() {
-    let syncForm = document.querySelector("codespin-sync-form") as SyncForm;
+    const token = getCookie("bearer_token");
+    const serverUrl = getCookie("server_url") || "http://localhost:10860";
 
-    if (!syncForm) {
-      syncForm = webjsx.createNode(<codespin-sync-form />) as SyncForm;
-      document.body.appendChild(syncForm);
-      (document.querySelector("codespin-sync-form") as SyncForm).showModal({
-        onClose: () => {
-          document.body.removeChild(syncForm);
-        },
-      });
+    connectToServer(token ?? "", serverUrl)
+      .then((response) => {
+        if (response.success) {
+          alert("Connected");
+        } else if (response.error === "BAD_TOKEN") {
+          this.promptForConnection();
+        } else {
+          alert("Is the server running?");
+        }
+      })
+      .catch(() => alert("Is the server running?"));
+  }
+
+  promptForConnection() {
+    let connectionForm = document.querySelector(
+      "codespin-connection"
+    ) as Connection;
+
+    if (!connectionForm) {
+      connectionForm = webjsx.createNode(<codespin-connection />) as Connection;
+      document.body.appendChild(connectionForm);
+      connectionForm.showModal();
     }
   }
+
+  // handleClick() {
+  //   let syncForm = document.querySelector("codespin-sync-form") as SyncForm;
+
+  //   if (!syncForm) {
+  //     syncForm = webjsx.createNode(<codespin-sync-form />) as SyncForm;
+  //     document.body.appendChild(syncForm);
+  //     (document.querySelector("codespin-sync-form") as SyncForm).showModal({
+  //       onClose: () => {
+  //         document.body.removeChild(syncForm);
+  //       },
+  //     });
+  //   }
+  // }
 }
 
 // Register the custom element for use

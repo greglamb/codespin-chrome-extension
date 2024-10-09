@@ -5,8 +5,11 @@ declare module "webjsx" {
   namespace JSX {
     interface IntrinsicElements {
       "codespin-sync-icon": {};
+      "codespin-icon": {};
       "codespin-sync-button": {};
+      "codespin-inbound-button": {};
       "codespin-sync-form": {};
+      "codespin-connection": {};
       "side-drawer": {
         id?: string;
         open?: boolean;

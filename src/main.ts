@@ -15,7 +15,6 @@ function start() {
   if (app === "CHATGPT") {
     setTimeout(() => {
       chatGPT.initializeCodeSpin();
-      chatGPT.attachCodeSpinLinks();
     }, 1000);
   } else {
     throw new Error("Only ChatGPT is supported now.");

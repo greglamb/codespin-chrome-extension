@@ -4,10 +4,7 @@ import { applyDiff } from "webjsx";
 export class SyncIcon extends HTMLElement {
   constructor() {
     super();
-  }
-
-  connectedCallback() {
-    // Render the SVG icon
+    this.attachShadow({ mode: "open" });
     this.render();
   }
 
@@ -40,7 +37,7 @@ export class SyncIcon extends HTMLElement {
         </g>
       </svg>
     );
-    applyDiff(this, vdom); // Applying diff to the light DOM
+    applyDiff(this.shadowRoot!, vdom); // Applying diff to the light DOM
   }
 }
 
