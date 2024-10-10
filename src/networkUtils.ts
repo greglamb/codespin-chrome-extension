@@ -15,24 +15,27 @@ export async function connectToServer(
   token: string,
   serverUrl: string
 ): Promise<{ success: boolean; error?: string }> {
-  const url = `${serverUrl}/auth`;
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+  return new Promise((resolve, reject) => {
+    window.postMessage(
+      {
+        action: "connectToServer",
+        data: { token, serverUrl },
       },
+      "*"
+    );
+
+    // Listen for the response
+    window.addEventListener("message", function handleResponse(event) {
+      if (event.data && event.data.action === "serverResponse") {
+        window.removeEventListener("message", handleResponse);
+
+        const response = event.data.response;
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject({ success: false, error: response.error || "Unknown error" });
+        }
+      }
     });
-
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(responseData.error || response.statusText);
-    }
-
-    return responseData;
-  } catch (error: any) {
-    return { success: false, error: error.message || "Unable to connect" };
-  }
+  });
 }

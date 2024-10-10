@@ -57,7 +57,9 @@ export class SyncButton extends HTMLElement {
           alert("Is the server running?");
         }
       })
-      .catch(() => alert("Is the server running?"));
+      .catch((ex: any) => {
+        alert("Is the server running?");
+      });
   }
 
   promptForConnection() {
