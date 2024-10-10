@@ -1,7 +1,6 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
-import { getCookie } from "../../cookieUtils.js";
-import { connectToServer } from "../../networkUtils.js";
+import { getProjectsClient } from "../../api/projects.js";
 import { Connection } from "./Connection.js";
 
 export class SyncButton extends HTMLElement {
@@ -43,15 +42,12 @@ export class SyncButton extends HTMLElement {
     applyDiff(this, vdom); // Applying diff to the light DOM
   }
 
-  handleClick() {
-    const token = getCookie("bearer_token");
-    const serverUrl = getCookie("server_url") || "http://localhost:10860";
-
-    connectToServer(token ?? "", serverUrl)
+  async handleClick() {
+    getProjectsClient()
       .then((response) => {
         if (response.success) {
           alert("Connected");
-        } else if (response.error === "BAD_TOKEN") {
+        } else if (response.error === "INVALID_COOKIE") {
           this.promptForConnection();
         } else {
           alert("Is the server running?");
@@ -68,10 +64,13 @@ export class SyncButton extends HTMLElement {
     ) as Connection;
 
     if (!connectionForm) {
-      connectionForm = webjsx.createNode(<codespin-connection />) as Connection;
+      connectionForm = webjsx.createNode(
+        <codespin-connection visible={true} />
+      ) as Connection;
       document.body.appendChild(connectionForm);
-      connectionForm.showModal();
     }
+
+    connectionForm.showModal();
   }
 
   // handleClick() {

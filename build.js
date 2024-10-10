@@ -2,7 +2,7 @@ import * as esbuild from "esbuild";
 
 esbuild
   .build({
-    entryPoints: ["src/main.ts", "src/background.ts"],
+    entryPoints: ["src/index.ts", "src/main.ts"],
     bundle: true,
     minify: true,
     sourcemap: true,

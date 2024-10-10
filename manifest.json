@@ -4,9 +4,6 @@
   "version": "1.0",
   "description": "Adds a link to code blocks on ChatGPT to sync with VSCode",
   "permissions": ["storage", "activeTab", "cookies", "webRequest"],
-  "background": {
-    "service_worker": "dist/background.js"
-  },
   "content_scripts": [
     {
       "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
@@ -17,7 +14,7 @@
   "host_permissions": ["http://localhost/*"],
   "web_accessible_resources": [
     {
-      "resources": ["dist/*", "dist/main.js"],
+      "resources": ["dist/*"],
       "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"]
     }
   ]

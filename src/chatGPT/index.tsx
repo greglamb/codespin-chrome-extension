@@ -3,11 +3,11 @@ import "side-drawer";
 
 import "./components/SyncButton.js";
 import "./components/InboundButton.js";
+import "./components/Connection.js";
 import "./components/SyncForm.js";
 import "./components/icons/SyncIcon.js";
 import "./components/icons/CodeSpinIcon.js";
 
-import { checkSyncUrl } from "../networkUtils.js";
 import { getProjectSyncUrl } from "../projectSyncUrls.js";
 import * as syncStatusStore from "../syncStatusStore.js";
 import { InboundButton } from "./components/InboundButton.js";
@@ -35,20 +35,6 @@ function addSyncButtonToDOM(preElement: HTMLElement) {
  * This function should be called periodically to handle dynamically added code blocks.
  */
 async function attachSyncButton() {
-  const currentUrl = window.location.href;
-  const syncUrl = getProjectSyncUrl(currentUrl);
-
-  if (!syncUrl || syncUrl.trim() === "") {
-    syncStatusStore.setConnectionState("disconnected");
-  } else {
-    const isValid = await checkSyncUrl(syncUrl);
-    if (!isValid) {
-      syncStatusStore.setConnectionState("disconnected");
-    } else {
-      syncStatusStore.setConnectionState("connected");
-    }
-  }
-
   const codeBlocks = document.querySelectorAll("pre");
 
   codeBlocks.forEach((preElement) => {

@@ -9,7 +9,7 @@ declare module "webjsx" {
       "codespin-sync-button": {};
       "codespin-inbound-button": {};
       "codespin-sync-form": {};
-      "codespin-connection": {};
+      "codespin-connection": { visible: boolean };
       "side-drawer": {
         id?: string;
         open?: boolean;
