@@ -59,33 +59,11 @@ export class SyncButton extends HTMLElement {
   }
 
   promptForConnection() {
-    let connectionForm = document.querySelector(
-      "codespin-connection"
+    const connectionForm = webjsx.createNode(
+      <codespin-connection />
     ) as Connection;
-
-    if (!connectionForm) {
-      connectionForm = webjsx.createNode(
-        <codespin-connection visible={true} />
-      ) as Connection;
-      document.body.appendChild(connectionForm);
-    }
-
-    connectionForm.showModal();
+    document.body.appendChild(connectionForm);
   }
-
-  // handleClick() {
-  //   let syncForm = document.querySelector("codespin-sync-form") as SyncForm;
-
-  //   if (!syncForm) {
-  //     syncForm = webjsx.createNode(<codespin-sync-form />) as SyncForm;
-  //     document.body.appendChild(syncForm);
-  //     (document.querySelector("codespin-sync-form") as SyncForm).showModal({
-  //       onClose: () => {
-  //         document.body.removeChild(syncForm);
-  //       },
-  //     });
-  //   }
-  // }
 }
 
 // Register the custom element for use

@@ -31,12 +31,6 @@ export class SyncForm extends HTMLElement {
     );
     applyDiff(this.shadow, vdom);
   }
-
-  showModal({ onClose }: { onClose: () => void }) {
-    const sideDrawer = this.shadow.querySelector("side-drawer") as SideDrawer;
-    sideDrawer.open = true;
-    sideDrawer.addEventListener("close", onClose);
-  }
 }
 
 customElements.define("codespin-sync-form", SyncForm);

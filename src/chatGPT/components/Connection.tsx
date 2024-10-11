@@ -2,27 +2,12 @@ import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
 
 export class Connection extends HTMLElement {
-  private _visible = false;
-  private shadow!: ShadowRoot;
-
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
-    this.shadow = this.shadowRoot!;
-    this.render();
-  }
-
-  get visible() {
-    return this._visible;
-  }
-
-  set visible(value: boolean) {
-    this._visible = value;
-    this.render();
   }
 
   render() {
-    const vdom = this._visible ? (
+    const vdom = (
       <>
         {/* Dark overlay for background */}
         <div
@@ -64,9 +49,7 @@ export class Connection extends HTMLElement {
             "
           >
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <label for="key" style="font-weight: bold;">
-                Secret Key (Required):
-              </label>
+              <label for="key">Secret Key (Required):</label>
               <input
                 id="key"
                 type="text"
@@ -78,7 +61,7 @@ export class Connection extends HTMLElement {
             <hr style="border: 0; height: 1px; background: #e0e0e0;" />
 
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <label for="host" style="font-weight: bold;">
+              <label for="host">
                 Host (optional, defaults to "localhost"):
               </label>
               <input
@@ -90,9 +73,7 @@ export class Connection extends HTMLElement {
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <label for="port" style="font-weight: bold;">
-                Port (optional, defaults to "60280"):
-              </label>
+              <label for="port">Port (optional, defaults to "60280"):</label>
               <input
                 id="port"
                 type="text"
@@ -102,11 +83,13 @@ export class Connection extends HTMLElement {
             </div>
 
             {/* Button Container */}
-            <div style="
+            <div
+              style="
                 display: flex; 
                 justify-content: flex-end; 
                 gap: 10px; /* Add space between the buttons */
-            ">
+            "
+            >
               <button
                 type="button"
                 id="cancel-button"
@@ -119,7 +102,7 @@ export class Connection extends HTMLElement {
                   cursor: pointer;
                   width: 100px; /* Ensure both buttons are the same width */
                 "
-                onclick={(e) => this.closeDialog()}
+                onclick={(e) => this.#closeDialog()}
               >
                 Cancel
               </button>
@@ -137,7 +120,7 @@ export class Connection extends HTMLElement {
                   font-weight: bold;
                   width: 100px; /* Ensure both buttons are the same width */
                 "
-                onclick={(e) => this.handleConnection(e)}
+                onclick={(e) => this.#onSaveClick(e)}
               >
                 Save
               </button>
@@ -145,36 +128,28 @@ export class Connection extends HTMLElement {
           </form>
         </dialog>
       </>
-    ) : (
-      <></>
     );
-    applyDiff(this.shadow, vdom);
-
-    const dialog = this.shadow.querySelector(
-      "#codespin-dialog"
-    ) as HTMLDialogElement;
-
-    // Close the modal when clicking outside the dialog
-    document.addEventListener("mousedown", (event) => {
-      if (
-        dialog.open &&
-        !dialog.contains(event.target as Node) &&
-        (event.target as Node) !== dialog
-      ) {
-        this.closeDialog();
-      }
-    });
+    applyDiff(this, vdom);
   }
 
-  handleConnection(event: Event) {
+  connectedCallback() {
+    this.render();
+    const dialog = this.querySelector("#codespin-dialog") as HTMLDialogElement;
+    dialog.showModal();
+  }
+
+  #closeDialog() {
+    document.body.removeChild(this);
+  }
+
+  #onSaveClick(event: Event) {
     event.preventDefault(); // Prevent form submission
 
-    const key = (this.shadow.querySelector("#key") as HTMLInputElement).value;
+    const key = (this.querySelector("#key") as HTMLInputElement).value;
     const host =
-      (this.shadow.querySelector("#host") as HTMLInputElement).value ||
-      "localhost";
+      (this.querySelector("#host") as HTMLInputElement).value || "localhost";
     const port =
-      (this.shadow.querySelector("#port") as HTMLInputElement).value || "60280";
+      (this.querySelector("#port") as HTMLInputElement).value || "60280";
 
     if (!key) {
       alert("Key is required.");
@@ -184,23 +159,7 @@ export class Connection extends HTMLElement {
     // Just alert the values for now
     alert(`Key: ${key}\nHost: ${host}\nPort: ${port}`);
 
-    this.closeDialog();
-  }
-
-  showModal() {
-    this.visible = true;
-    const dialog = this.shadow.querySelector(
-      "#codespin-dialog"
-    ) as HTMLDialogElement;
-    dialog.showModal();
-  }
-
-  closeDialog() {
-    const dialog = this.shadow.querySelector(
-      "#codespin-dialog"
-    ) as HTMLDialogElement;
-    dialog.close();
-    this.visible = false;
+    this.#closeDialog();
   }
 }
 
