@@ -1,7 +1,8 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
-import { getProjectsClient } from "../../api/projects.js";
 import { Connection } from "./Connection.js";
+import { getProjects } from "../../api/projects.js";
+import { MISSING_KEY } from "../../messageTypes.js";
 
 export class SyncButton extends HTMLElement {
   constructor() {
@@ -43,11 +44,11 @@ export class SyncButton extends HTMLElement {
   }
 
   async handleClick() {
-    getProjectsClient()
+    getProjects()
       .then((response) => {
         if (response.success) {
           alert("Connected");
-        } else if (response.error === "INVALID_COOKIE") {
+        } else if (response.error === MISSING_KEY) {
           this.promptForConnection();
         } else {
           alert("Is the server running?");

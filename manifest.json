@@ -3,7 +3,7 @@
   "name": "CodeSpin.AI Chat",
   "version": "1.0",
   "description": "Adds a link to code blocks on ChatGPT to sync with VSCode",
-  "permissions": ["storage", "activeTab", "cookies", "webRequest"],
+  "permissions": ["storage", "activeTab", "webRequest"],
   "content_scripts": [
     {
       "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],

@@ -1,5 +1,6 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
+import { CODESPIN_SAVE_CONNECTION } from "../../messageTypes.js";
 
 export class Connection extends HTMLElement {
   constructor() {
@@ -54,7 +55,7 @@ export class Connection extends HTMLElement {
                 id="key"
                 type="text"
                 required
-                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;"
+                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; color: black;"
               />
             </div>
 
@@ -68,7 +69,7 @@ export class Connection extends HTMLElement {
                 id="host"
                 type="text"
                 placeholder="localhost"
-                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;"
+                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; color: black;"
               />
             </div>
 
@@ -78,7 +79,7 @@ export class Connection extends HTMLElement {
                 id="port"
                 type="text"
                 placeholder="60280"
-                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;"
+                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; color: black;"
               />
             </div>
 
@@ -146,18 +147,22 @@ export class Connection extends HTMLElement {
     event.preventDefault(); // Prevent form submission
 
     const key = (this.querySelector("#key") as HTMLInputElement).value;
-    const host =
-      (this.querySelector("#host") as HTMLInputElement).value || "localhost";
-    const port =
-      (this.querySelector("#port") as HTMLInputElement).value || "60280";
+    const host = (this.querySelector("#host") as HTMLInputElement).value;
+    const port = (this.querySelector("#port") as HTMLInputElement).value;
 
     if (!key) {
       alert("Key is required.");
       return;
     }
 
-    // Just alert the values for now
-    alert(`Key: ${key}\nHost: ${host}\nPort: ${port}`);
+    window.postMessage({
+      type: CODESPIN_SAVE_CONNECTION,
+      data: {
+        key,
+        host,
+        port,
+      },
+    });
 
     this.#closeDialog();
   }
