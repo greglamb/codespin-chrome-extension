@@ -17,7 +17,7 @@ export async function getProjects(): Promise<
     if (result.success) {
       return result;
     } else {
-      return validateFetch(result, async (cause) => getProjects());
+      return await validateFetch(result, (cause) => getProjects());
     }
   });
 }

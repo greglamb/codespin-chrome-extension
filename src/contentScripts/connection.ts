@@ -1,13 +1,13 @@
-import { CODESPIN_SAVE_CONNECTION, ConnectionInfo } from "../messageTypes.js";
+import { ConnectionInfo } from "../messageTypes.js";
 
 export function getConnectionInfo(): Promise<ConnectionInfo | undefined> {
   return new Promise((resolve) => {
     chrome.storage.local.get(["connection"], function (result) {
-      return result.settings
+      return result.connection
         ? resolve({
-            key: result.settings.key,
-            host: result.settings.host ?? "localhost",
-            port: result.settings.port ?? 60280,
+            key: result.connection.key,
+            host: result.connection.host || "localhost",
+            port: result.connection.port || 60280,
           })
         : resolve(undefined);
     });
@@ -17,16 +17,4 @@ export function getConnectionInfo(): Promise<ConnectionInfo | undefined> {
 export async function saveConnectionInfo(data: ConnectionInfo) {
   const { host, port, key } = data;
   chrome.storage.local.set({ connection: { host, port, key } });
-}
-
-export function registerEvents(): Array<{
-  event: string;
-  handler: (data: ConnectionInfo) => void | Promise<void>;
-}> {
-  return [
-    {
-      event: CODESPIN_SAVE_CONNECTION,
-      handler: saveConnectionInfo,
-    },
-  ];
 }

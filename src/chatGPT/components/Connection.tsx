@@ -1,9 +1,21 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
-import { CODESPIN_SAVE_CONNECTION } from "../../messageTypes.js";
+import { saveConnection } from "../../api/connection.js";
+import { ConnectionInfo } from "../../messageTypes.js";
 
 export class Connection extends HTMLElement {
-  #resolve: (() => void) | undefined;
+  #resolve: ((connection: ConnectionInfo | undefined) => void) | undefined =
+    undefined;
+    
+  #connection: ConnectionInfo | undefined = undefined;
+
+  get resolve() {
+    return this.resolve;
+  }
+
+  set resolve(value: (connection: ConnectionInfo | undefined) => void) {
+    this.#resolve = value;
+  }
 
   constructor() {
     super();
@@ -144,7 +156,7 @@ export class Connection extends HTMLElement {
   #closeDialog() {
     document.body.removeChild(this);
     if (this.#resolve) {
-      this.#resolve();
+      this.#resolve(this.#connection);
     }
   }
 
@@ -160,15 +172,15 @@ export class Connection extends HTMLElement {
       return;
     }
 
-    window.postMessage({
-      type: CODESPIN_SAVE_CONNECTION,
-      data: {
-        key,
-        host,
-        port,
-      },
-    });
+    const connection = {
+      key,
+      host,
+      port,
+    };
 
+    saveConnection(connection);
+
+    this.#connection = connection;
     this.#closeDialog();
   }
 }
