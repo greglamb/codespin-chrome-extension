@@ -1,6 +1,6 @@
-import { ContentScriptMessageBrokerType } from "../contentScripts/broker.js";
-import { createMessageBroker } from "../messageBroker.js";
+import { ContentScriptMessageBrokerEvents } from "../contentScripts/broker.js";
+import { createMessageBrokerClient } from "../messageBrokerClient.js";
 
-export function getContentScriptMessageBrokerProxy(): ContentScriptMessageBrokerType {
-  return createMessageBroker<any>() as any;
+export function getMessageBrokerClient() {
+  return createMessageBrokerClient<ContentScriptMessageBrokerEvents>();
 }

@@ -1,81 +1,81 @@
-// EventHandler type definition
-type EventHandler<TPayload, TResponse> = (
-  payload: TPayload
-) => Promise<TResponse>;
+import { IDisposable } from "./IDisposable.js";
+import { EventHandlerMap } from "./messageBroker.js";
 
-// EventHandlerMap - dynamically accumulates the event handlers
-type EventHandlerMap = {
-  [event: string]: {
-    payload: any;
-    response: any;
-  };
-};
-
-// Send function definition
-type SendFunction<TEvents extends EventHandlerMap> = <K extends keyof TEvents>(
-  event: K,
-  payload: TEvents[K]["payload"]
-) => Promise<TEvents[K]["response"]>;
-
-// AttachHandler function definition
-type AttachHandlerFunction<TEvents extends EventHandlerMap> = <
-  K extends string,
-  P,
-  R
->(
-  event: K,
-  handler: EventHandler<P, R>
-) => MessageBroker<TEvents & { [key in K]: { payload: P; response: R } }>;
-
-// MessageBroker interface definition
-export interface MessageBroker<TEvents extends EventHandlerMap> {
-  send: SendFunction<TEvents>;
-  attachHandler: AttachHandlerFunction<TEvents>;
+// Helper function to generate a random 16-character alphanumeric string
+function generateUniquePrefix(): string {
+  return Math.random().toString(36).substring(2, 18); // Generates a 16-character string
 }
 
-// Create the message broker factory function
-export function createMessageBroker<
-  TEvents extends EventHandlerMap = {}
->(): MessageBroker<TEvents> {
-  // State to store event handlers
-  const eventHandlers: Map<string, EventHandler<any, any>> = new Map();
-
-  // The send function ensures correct payload/response types based on the events
-  const send: SendFunction<TEvents> = <K extends keyof TEvents>(
-    eventName: K,
+// Define the structure of the MessageBroker client
+export interface MessageClient<TEvents extends EventHandlerMap>
+  extends IDisposable {
+  send<K extends keyof TEvents>(
+    event: K,
     payload: TEvents[K]["payload"]
-  ) => {
-    return new Promise((resolve, reject) => {
-      const handler = eventHandlers.get(eventName as string);
-      if (handler) {
-        handler(payload).then(resolve).catch(reject);
-      } else {
-        reject(
-          new Error(`No handler registered for event: ${eventName as string}`)
-        );
+  ): Promise<TEvents[K]["response"]>;
+}
+
+// The function to create a message broker client
+export function createMessageBrokerClient<
+  TEvents extends EventHandlerMap
+>(): MessageClient<TEvents> {
+  // Generate a unique prefix for this instance
+  const uniquePrefix = generateUniquePrefix();
+
+  // Store pending requests (mapping id to the resolve function of the Promise)
+  const pendingRequests: Map<string, (response: any) => void> = new Map();
+
+  // Sequential ID generator, starts from 1
+  let currentId = 1;
+
+  // Function to generate a sequential ID with the unique prefix
+  const generateSequentialId = () => `${uniquePrefix}-${currentId++}`;
+
+  function onMessage(event: MessageEvent) {
+    const { id, response } = event.data as { id: string; response: any };
+
+    // If the message ID matches a pending request, resolve the corresponding promise
+    if (pendingRequests.has(id)) {
+      const resolve = pendingRequests.get(id);
+      if (resolve) {
+        resolve(response);
+        pendingRequests.delete(id); // Remove the resolved request from the map
       }
+    }
+  }
+
+  // Listen for incoming messages (responses from the broker)
+  window.addEventListener("message", onMessage);
+
+  const dispose = () => {
+    window.removeEventListener("message", onMessage);
+  };
+
+  // Client's `send` method to send an event to the broker and wait for a response
+  const send = <K extends keyof TEvents>(
+    event: K,
+    payload: TEvents[K]["payload"]
+  ): Promise<TEvents[K]["response"]> => {
+    const id = generateSequentialId(); // Generate a unique ID for this request
+
+    const responseId = `${id}-response`;
+
+    return new Promise((resolve) => {
+      // Store the resolve function, so it can be called when the response is received
+      pendingRequests.set(responseId, resolve);
+
+      // Send the event to the broker with the unique ID and payload
+      window.postMessage(
+        {
+          id,
+          event,
+          payload,
+        },
+        "*"
+      );
     });
   };
 
-  // The attachHandler function adds event handlers and updates the broker's types
-  const attachHandler: AttachHandlerFunction<TEvents> = <
-    K extends string,
-    P,
-    R
-  >(
-    event: K,
-    handler: EventHandler<P, R>
-  ) => {
-    eventHandlers.set(event, handler);
-    // Return a new broker instance with extended types (previous events + new event)
-    return createMessageBroker<
-      TEvents & { [key in K]: { payload: P; response: R } }
-    >();
-  };
-
-  // Return the initial broker with no handlers attached
-  return {
-    send,
-    attachHandler,
-  };
+  // Return the client object with the send method
+  return { dispose, send };
 }
