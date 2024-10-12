@@ -2,7 +2,7 @@ import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
 import { Connection } from "./Connection.js";
 import { getProjects } from "../../api/projects.js";
-import { MISSING_KEY } from "../../messageTypes.js";
+import { ConnectionInfo, MISSING_KEY } from "../../messageTypes.js";
 
 export class SyncButton extends HTMLElement {
   constructor() {
@@ -44,26 +44,16 @@ export class SyncButton extends HTMLElement {
   }
 
   async handleClick() {
-    getProjects()
-      .then((response) => {
-        if (response.success) {
-          alert("Connected");
-        } else if (response.error === MISSING_KEY) {
-          this.promptForConnection();
-        } else {
-          alert("Is the server running?");
-        }
-      })
-      .catch((ex: any) => {
-        alert("Is the server running?");
-      });
+    const projects = await getProjects();
   }
 
   promptForConnection() {
-    const connectionForm = webjsx.createNode(
-      <codespin-connection />
-    ) as Connection;
-    document.body.appendChild(connectionForm);
+    return new Promise<ConnectionInfo | undefined>((resolve) => {
+      const connectionForm = webjsx.createNode(
+        <codespin-connection resolve={resolve} />
+      ) as Connection;
+      document.body.appendChild(connectionForm);
+    });
   }
 }
 

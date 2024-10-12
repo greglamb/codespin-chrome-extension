@@ -3,6 +3,8 @@ import { applyDiff } from "webjsx";
 import { CODESPIN_SAVE_CONNECTION } from "../../messageTypes.js";
 
 export class Connection extends HTMLElement {
+  #resolve: (() => void) | undefined;
+
   constructor() {
     super();
   }
@@ -141,6 +143,9 @@ export class Connection extends HTMLElement {
 
   #closeDialog() {
     document.body.removeChild(this);
+    if (this.#resolve) {
+      this.#resolve();
+    }
   }
 
   #onSaveClick(event: Event) {

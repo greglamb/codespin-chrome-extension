@@ -1,25 +1,21 @@
-import { CODESPIN_GET_PROJECTS, CODESPIN_GET_PROJECTS_RESPONSE } from "../messageTypes.js";
+import {
+  CODESPIN_GET_PROJECTS,
+  Project,
+  Result,
+  UNKNOWN,
+} from "../messageTypes.js";
+import { getContentScriptMessageBrokerProxy } from "./broker.js";
+import { validateFetch } from "./validateFetch.js";
 
-export async function getProjects(): Promise<{
-  success: boolean;
-  error?: string;
-}> {
-  return new Promise((resolve) => {
-    window.postMessage(
-      {
-        type: CODESPIN_GET_PROJECTS,
-      },
-      "*"
-    );
+export async function getProjects(): Promise<
+  Result<Project[], typeof UNKNOWN> | undefined
+> {
+  const broker = getContentScriptMessageBrokerProxy();
+  const result = await broker.send(CODESPIN_GET_PROJECTS, {});
 
-    function handler(event: MessageEvent) {
-      if (event.data.type === CODESPIN_GET_PROJECTS_RESPONSE) {
-        window.removeEventListener("message", handler);
-        resolve(event.data);
-      }
-    }
-
-    // Listen for the response
-    window.addEventListener("message", handler);
-  });
+  if (result.success) {
+    return result;
+  } else {
+    return validateFetch(result, async (cause) => getProjects());
+  }
 }

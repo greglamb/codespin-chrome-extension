@@ -1,6 +1,4 @@
-import { CODESPIN_SAVE_CONNECTION } from "../messageTypes.js";
-
-export type ConnectionInfo = { host: string; port: string; key: string };
+import { CODESPIN_SAVE_CONNECTION, ConnectionInfo } from "../messageTypes.js";
 
 export function getConnectionInfo(): Promise<ConnectionInfo | undefined> {
   return new Promise((resolve) => {

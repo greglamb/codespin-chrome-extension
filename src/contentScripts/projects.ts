@@ -1,21 +1,23 @@
-import { ConnectionInfo, getConnectionInfo } from "./connection.js";
 import {
-  CODESPIN_GET_PROJECTS,
-  CODESPIN_GET_PROJECTS_RESPONSE,
+  ConnectionInfo,
+  Project,
+  Result,
   MISSING_KEY,
   UNAUTHORIZED,
+  UNKNOWN,
 } from "../messageTypes.js";
+import { getConnectionInfo } from "./connection.js";
 
-async function getProjects() {
+export async function getProjects(): Promise<
+  Result<Project[], typeof MISSING_KEY | typeof UNAUTHORIZED | typeof UNKNOWN>
+> {
   const settings: ConnectionInfo | undefined = await getConnectionInfo();
 
   if (!settings || !settings.key) {
-    window.postMessage({
-      type: CODESPIN_GET_PROJECTS_RESPONSE,
+    return {
       success: false,
       error: MISSING_KEY,
-    });
-    return;
+    };
   }
 
   const { key, host, port } = settings;
@@ -33,38 +35,32 @@ async function getProjects() {
 
     if (response.status === 401) {
       // Return unauthorized error to the caller
-      window.postMessage({
-        type: CODESPIN_GET_PROJECTS_RESPONSE,
+      return {
         success: false,
         error: UNAUTHORIZED,
-      });
+      };
     }
 
     const data = await response.json();
 
-    window.postMessage({
-      type: CODESPIN_GET_PROJECTS_RESPONSE,
-      success: data.success,
-      error: data.error,
-    });
+    if (data.success) {
+      return {
+        success: true,
+        result: data.result,
+      };
+    } else {
+      return {
+        success: false,
+        error: UNKNOWN,
+        message: data.message,
+      };
+    }
   } catch (error) {
     // Return fetch error to the caller
-    window.postMessage({
-      type: CODESPIN_GET_PROJECTS_RESPONSE,
+    return {
       success: false,
-      error: (error as Error).message,
-    });
+      error: UNKNOWN,
+      message: (error as Error).message,
+    };
   }
-}
-
-export function registerEvents(): Array<{
-  event: string;
-  handler: (event: MessageEvent) => void | Promise<void>;
-}> {
-  return [
-    {
-      event: CODESPIN_GET_PROJECTS,
-      handler: getProjects,
-    },
-  ];
 }
