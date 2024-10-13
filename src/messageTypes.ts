@@ -19,4 +19,4 @@ export type Project = {
   path: string;
 };
 
-export type ConnectionInfo = { host: string; port: string; key: string };
+export type ConnectionInfo = { port: string; key: string };

@@ -20,9 +20,9 @@ export async function getProjects(): Promise<
     };
   }
 
-  const { key, host, port } = settings;
+  const { key, port } = settings;
 
-  const serverUrl = `http://${host}:${port}/projects`; // Build server URL from cookie info
+  const serverUrl = `http://localhost:${port}/projects`; // Build server URL from cookie info
 
   try {
     const response = await fetch(serverUrl, {

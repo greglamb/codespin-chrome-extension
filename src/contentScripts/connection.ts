@@ -6,7 +6,6 @@ export function getConnectionInfo(): Promise<ConnectionInfo | undefined> {
       return result.connection
         ? resolve({
             key: result.connection.key,
-            host: result.connection.host || "localhost",
             port: result.connection.port || 60280,
           })
         : resolve(undefined);
@@ -15,6 +14,6 @@ export function getConnectionInfo(): Promise<ConnectionInfo | undefined> {
 }
 
 export async function saveConnectionInfo(data: ConnectionInfo) {
-  const { host, port, key } = data;
-  chrome.storage.local.set({ connection: { host, port, key } });
+  const { port, key } = data;
+  chrome.storage.local.set({ connection: { port, key } });
 }

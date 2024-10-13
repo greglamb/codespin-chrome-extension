@@ -6,7 +6,7 @@ import { ConnectionInfo } from "../../messageTypes.js";
 export class Connection extends HTMLElement {
   #resolve: ((connection: ConnectionInfo | undefined) => void) | undefined =
     undefined;
-    
+
   #connection: ConnectionInfo | undefined = undefined;
 
   get resolve() {
@@ -50,8 +50,12 @@ export class Connection extends HTMLElement {
             border-radius: 12px; /* Rounded corners for a softer look */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
             border: none; /* Remove default dialog border */
+            background: darkgreen; 
           "
         >
+          <h3>
+            One-time Setup
+          </h3>
           <form
             method="dialog"
             style="
@@ -60,7 +64,7 @@ export class Connection extends HTMLElement {
               gap: 15px; 
               padding: 10px; /* Add padding inside the form */
               border-radius: 8px; /* Round corners for the form */
-              background-color: #333; /* Light background for the form */
+              background-color: #071601; /* Light background for the form */
             "
           >
             <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -73,22 +77,8 @@ export class Connection extends HTMLElement {
               />
             </div>
 
-            <hr style="border: 0; height: 1px; background: #e0e0e0;" />
-
             <div style="display: flex; flex-direction: column; gap: 5px;">
-              <label for="host">
-                Host (optional, defaults to "localhost"):
-              </label>
-              <input
-                id="host"
-                type="text"
-                placeholder="localhost"
-                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; color: black;"
-              />
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-              <label for="port">Port (optional, defaults to "60280"):</label>
+              <label for="port">Port (Optional, defaults to "60280"):</label>
               <input
                 id="port"
                 type="text"
@@ -164,7 +154,6 @@ export class Connection extends HTMLElement {
     event.preventDefault(); // Prevent form submission
 
     const key = (this.querySelector("#key") as HTMLInputElement).value;
-    const host = (this.querySelector("#host") as HTMLInputElement).value;
     const port = (this.querySelector("#port") as HTMLInputElement).value;
 
     if (!key) {
@@ -174,7 +163,6 @@ export class Connection extends HTMLElement {
 
     const connection = {
       key,
-      host,
       port,
     };
 
