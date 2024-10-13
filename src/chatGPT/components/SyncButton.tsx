@@ -45,6 +45,10 @@ export class SyncButton extends HTMLElement {
 
   async handleClick() {
     const projects = await getProjects();
+
+    console.log({
+      projects,
+    });
   }
 
   promptForConnection() {

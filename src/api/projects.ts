@@ -6,7 +6,7 @@ import {
   UNKNOWN,
 } from "../messageTypes.js";
 import { getMessageBrokerClient } from "./broker.js";
-import { validateFetch } from "./validateFetch.js";
+import { validateConnection } from "./validateConnection.js";
 
 export async function getProjects(): Promise<
   Result<Project[], typeof UNKNOWN> | undefined
@@ -17,7 +17,7 @@ export async function getProjects(): Promise<
     if (result.success) {
       return result;
     } else {
-      return await validateFetch(result, (cause) => getProjects());
+      return await validateConnection(result, (cause) => getProjects());
     }
   });
 }

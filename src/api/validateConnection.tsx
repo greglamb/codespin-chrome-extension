@@ -7,7 +7,7 @@ import {
 } from "../messageTypes.js";
 import { Connection } from "../chatGPT/components/Connection.js";
 
-export async function validateFetch<T>(
+export async function validateConnection<T>(
   result: Result<string>,
   whenFetchError: (
     cause: typeof MISSING_KEY | typeof UNAUTHORIZED

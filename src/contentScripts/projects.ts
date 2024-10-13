@@ -26,7 +26,7 @@ export async function getProjects(): Promise<
 
   try {
     const response = await fetch(serverUrl, {
-      method: "POST",
+      method: "GET",
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
