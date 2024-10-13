@@ -1,2 +1,2 @@
-# chrome-plugin
-CodeSpin.AI Chrome Plugin 
+# chrome-extension
+CodeSpin.AI Chrome Extension 
