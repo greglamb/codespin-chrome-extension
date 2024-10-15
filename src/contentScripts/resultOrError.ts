@@ -1,15 +1,16 @@
 import {
   ConnectionInfo,
-  Project,
-  Result,
   MISSING_KEY,
+  Result,
   UNAUTHORIZED,
   UNKNOWN,
 } from "../messageTypes.js";
 import { getConnectionInfo } from "./connection.js";
 
-export async function getProjects(): Promise<
-  Result<Project[], typeof MISSING_KEY | typeof UNAUTHORIZED | typeof UNKNOWN>
+export async function resultOrError<T, TError>(
+  fetchFunc: (settings: ConnectionInfo) => Promise<Response>
+): Promise<
+  Result<T, typeof MISSING_KEY | typeof UNKNOWN | typeof UNAUTHORIZED>
 > {
   const settings: ConnectionInfo | undefined = await getConnectionInfo();
 
@@ -20,18 +21,8 @@ export async function getProjects(): Promise<
     };
   }
 
-  const { key, port } = settings;
-
-  const serverUrl = `http://localhost:${port}/projects`; // Build server URL from cookie info
-
   try {
-    const response = await fetch(serverUrl, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetchFunc(settings);
 
     if (response.status === 401) {
       // Return unauthorized error to the caller

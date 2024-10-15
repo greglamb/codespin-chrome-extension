@@ -1,8 +1,8 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
+import { getFiles } from "../../api/files.js";
+import { ConnectionInfo } from "../../messageTypes.js";
 import { Connection } from "./Connection.js";
-import { getProjects } from "../../api/projects.js";
-import { ConnectionInfo, MISSING_KEY } from "../../messageTypes.js";
 
 export class SyncButton extends HTMLElement {
   constructor() {
@@ -44,10 +44,15 @@ export class SyncButton extends HTMLElement {
   }
 
   async handleClick() {
-    const projects = await getProjects();
+    const projectsResponse = await getFiles();
 
+    if (projectsResponse?.success) {
+
+    } else {
+
+    }
     console.log({
-      projects,
+      projects: projectsResponse,
     });
   }
 
