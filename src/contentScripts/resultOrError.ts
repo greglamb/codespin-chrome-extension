@@ -1,5 +1,6 @@
 import {
   ConnectionInfo,
+  FAILED_TO_CONNECT,
   MISSING_KEY,
   Result,
   UNAUTHORIZED,
@@ -7,10 +8,16 @@ import {
 } from "../messageTypes.js";
 import { getConnectionInfo } from "./connection.js";
 
-export async function resultOrError<T, TError>(
+export async function resultOrError<T>(
   fetchFunc: (settings: ConnectionInfo) => Promise<Response>
 ): Promise<
-  Result<T, typeof MISSING_KEY | typeof UNKNOWN | typeof UNAUTHORIZED>
+  Result<
+    T,
+    | typeof MISSING_KEY
+    | typeof UNAUTHORIZED
+    | typeof FAILED_TO_CONNECT
+    | typeof UNKNOWN
+  >
 > {
   const settings: ConnectionInfo | undefined = await getConnectionInfo();
 
@@ -50,7 +57,7 @@ export async function resultOrError<T, TError>(
     // Return fetch error to the caller
     return {
       success: false,
-      error: UNKNOWN,
+      error: FAILED_TO_CONNECT,
       message: (error as Error).message,
     };
   }

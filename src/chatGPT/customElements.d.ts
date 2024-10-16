@@ -13,6 +13,9 @@ declare module "webjsx" {
       "codespin-connection": {
         resolve?: (info: ConnectionInfo | undefined) => void;
       };
+      "codespin-modal-message": {
+        resolve?: () => void;
+      };
       "side-drawer": {
         id?: string;
         open?: boolean;

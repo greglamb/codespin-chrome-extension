@@ -1,19 +1,11 @@
 import {
-  ConnectionInfo,
-  FileSystemNode,
-  MISSING_KEY,
-  Result,
-  UNAUTHORIZED,
-  UNKNOWN,
+  ConnectionInfo
 } from "../messageTypes.js";
 import { resultOrError } from "./resultOrError.js";
 
-export async function getFiles(): Promise<
-  Result<
-    FileSystemNode,
-    typeof MISSING_KEY | typeof UNAUTHORIZED | typeof UNKNOWN
-  >
-> {
+type ResultOrErrorReturn = Awaited<ReturnType<typeof resultOrError>>;
+
+export async function getFiles(): Promise<ResultOrErrorReturn> {
   return await resultOrError((settings: ConnectionInfo) =>
     fetch(`http://localhost:${settings.port}/files`, {
       method: "GET",

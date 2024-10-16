@@ -44,16 +44,12 @@ export class SyncButton extends HTMLElement {
   }
 
   async handleClick() {
-    const projectsResponse = await getFiles();
+    const filesResponse = await getFiles();
 
-    if (projectsResponse?.success) {
-
+    if (filesResponse?.success) {
     } else {
-
     }
-    console.log({
-      projects: projectsResponse,
-    });
+    console.log(filesResponse);
   }
 
   promptForConnection() {

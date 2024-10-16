@@ -1,33 +1,48 @@
 import * as webjsx from "webjsx";
+import { Connection } from "../chatGPT/components/Connection.js";
 import {
   ConnectionInfo,
+  ErrorResult,
+  FAILED_TO_CONNECT,
   MISSING_KEY,
-  Result,
   UNAUTHORIZED,
 } from "../messageTypes.js";
-import { Connection } from "../chatGPT/components/Connection.js";
 
-export async function validateConnection<T>(
-  result: Result<string>,
+export async function validateConnection<TResult, TError extends string>(
+  result: ErrorResult<TError>,
   whenFetchError: (
     cause: typeof MISSING_KEY | typeof UNAUTHORIZED
-  ) => Promise<T>
-): Promise<T | undefined> {
-  if (
-    !result.success &&
-    (result.error === MISSING_KEY || result.error === UNAUTHORIZED)
-  ) {
-    const connectionInfo = await new Promise<ConnectionInfo | undefined>(
-      (resolve) => {
-        const connectionForm = webjsx.createNode(
-          <codespin-connection resolve={resolve} />
-        ) as Connection;
-        document.body.appendChild(connectionForm);
-      }
-    );
+  ) => Promise<TResult>
+): Promise<TResult | void> {
+  if (!result.success) {
+    if (resultIsConnectionIssue(result)) {
+      const connectionInfo = await new Promise<ConnectionInfo | undefined>(
+        (resolve) => {
+          const connectionForm = webjsx.createNode(
+            <codespin-connection resolve={resolve} />
+          ) as Connection;
+          document.body.appendChild(connectionForm);
+        }
+      );
 
-    if (connectionInfo) {
-      return await whenFetchError(result.error);
+      if (connectionInfo) {
+        return await whenFetchError(result.error);
+      }
+    } else {
+      if (result.error === FAILED_TO_CONNECT) {
+        await new Promise<void>((resolve) => {
+          const connectionForm = webjsx.createNode(
+            <codespin-modal-message resolve={resolve} />
+          ) as Connection;
+          document.body.appendChild(connectionForm);
+        });
+      }
     }
   }
+}
+
+function resultIsConnectionIssue(
+  result: ErrorResult<string>
+): result is ErrorResult<typeof MISSING_KEY | typeof UNAUTHORIZED> {
+  return result.error === MISSING_KEY || result.error === UNAUTHORIZED;
 }
