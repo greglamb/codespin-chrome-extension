@@ -7,6 +7,8 @@ import {
   MISSING_KEY,
   UNAUTHORIZED,
 } from "../messageTypes.js";
+import { ModalDialog } from "../chatGPT/components/ModalDialog.js";
+import { ModalMessage } from "../chatGPT/components/ModalMessage.js";
 
 export async function validateConnection<TResult, TError extends string>(
   result: ErrorResult<TError>,
@@ -32,8 +34,13 @@ export async function validateConnection<TResult, TError extends string>(
       if (result.error === FAILED_TO_CONNECT) {
         await new Promise<void>((resolve) => {
           const connectionForm = webjsx.createNode(
-            <codespin-modal-message resolve={resolve} />
-          ) as Connection;
+            <codespin-modal-message
+              title="Failed to Connecter"
+              message="Could not connect. Check if you're running the codefix server
+                  in the project directory."
+              resolve={resolve}
+            ></codespin-modal-message>
+          ) as ModalMessage;
           document.body.appendChild(connectionForm);
         });
       }

@@ -1,129 +1,76 @@
 import * as webjsx from "webjsx";
-import { applyDiff } from "webjsx";
+
+import { ModalDialog } from "./ModalDialog.js";
 
 export class ModalMessage extends HTMLElement {
-  #resolve: (() => void) | undefined = undefined;
-
-  get resolve() {
-    return this.resolve;
-  }
-
-  set resolve(value: () => void) {
-    this.#resolve = value;
-  }
+  #modalDialog!: ModalDialog<void>;
+  #title: string;
+  #message: string;
 
   constructor() {
     super();
+    this.#title = "";
+    this.#message = "";
+  }
+
+  // Accept title and message as parameters
+  set title(value: string) {
+    this.#title = value;
+    this.render(); // Re-render when title changes
+  }
+
+  get title(): string {
+    return this.#title;
+  }
+
+  set message(value: string) {
+    this.#message = value;
+    this.render(); // Re-render when message changes
+  }
+
+  get message(): string {
+    return this.#message;
+  }
+
+  // Close the dialog
+  close() {
+    this.#modalDialog.close(undefined); // Resolve with `undefined` for "OK" button
+  }
+
+  // Expose the resolve method to handle external promise resolution
+  set resolve(value: () => void) {
+    if (this.#modalDialog) {
+      this.#modalDialog.resolve = value;
+    }
   }
 
   render() {
     const vdom = (
       <>
-        {/* Dark overlay for background */}
-        <div
-          id="overlay"
-          style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.8); /* Darken the background */
-            z-index: 10; /* Ensure it is behind the dialog but above other content */
-          "
-        ></div>
-
-        <dialog
-          id="codespin-dialog"
-          style="
-            width: 480px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 20; /* Ensure it is above the overlay */
-            border-radius: 12px; /* Rounded corners for a softer look */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
-            border: none; /* Remove default dialog border */
-            background: darkgreen; 
-          "
+        {/* Use ModalDialog internally */}
+        <codespin-modal-dialog
+          ref={(el) => (this.#modalDialog = el as ModalDialog<void>)}
         >
-          <h3>One-time Setup</h3>
-          <form
-            method="dialog"
-            style="
-              display: flex; 
-              flex-direction: column; 
-              gap: 15px; 
-              padding: 10px; /* Add padding inside the form */
-              border-radius: 8px; /* Round corners for the form */
-              background-color: #071601; /* Light background for the form */
-            "
-          >
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-              <label for="key">Secret Key (Required):</label>
-              <input
-                id="key"
-                type="text"
-                required
-                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; color: black;"
-              />
-            </div>
+          <div slot="content">
+            <h3>{this.#title}</h3>
+            <p>{this.#message}</p>
+          </div>
 
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-              <label for="port">Port (Optional, defaults to "60280"):</label>
-              <input
-                id="port"
-                type="text"
-                placeholder="60280"
-                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; color: black;"
-              />
-            </div>
-
-            {/* Button Container */}
-            <div
-              style="
-                display: flex; 
-                justify-content: flex-end; 
-                gap: 10px; /* Add space between the buttons */
-            "
-            >
-              <button
-                type="button"
-                id="cancel-button"
-                style="
-                  padding: 8px 12px; 
-                  border-radius: 4px; 
-                  background-color: #6c757d; /* Grey color for cancel */
-                  color: white; 
-                  border: none; 
-                  cursor: pointer;
-                  width: 100px; /* Ensure both buttons are the same width */
-                "
-                onclick={(e) => this.#closeDialog()}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </dialog>
+          <div slot="buttons">
+            <button type="button" onclick={() => this.close()}>
+              OK
+            </button>
+          </div>
+        </codespin-modal-dialog>
       </>
     );
-    applyDiff(this, vdom);
+    webjsx.applyDiff(this, vdom);
   }
 
   connectedCallback() {
     this.render();
-    const dialog = this.querySelector("#codespin-dialog") as HTMLDialogElement;
-    dialog.showModal();
-  }
-
-  #closeDialog() {
-    document.body.removeChild(this);
-    if (this.#resolve) {
-      this.#resolve();
-    }
   }
 }
 
+// Define the custom element with generics
 customElements.define("codespin-modal-message", ModalMessage);

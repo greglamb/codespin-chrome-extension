@@ -13,8 +13,15 @@ declare module "webjsx" {
       "codespin-connection": {
         resolve?: (info: ConnectionInfo | undefined) => void;
       };
+      "codespin-modal-dialog": {
+        ref?: (el: HTMLElement) => void;
+        resolve?: () => void;
+        children: VNode | VNode[];
+      };
       "codespin-modal-message": {
         resolve?: () => void;
+        title: string;
+        message: string;
       };
       "side-drawer": {
         id?: string;

@@ -1,15 +1,15 @@
-import * as webjsx from "webjsx";
 import "side-drawer";
+import * as webjsx from "webjsx";
 
-import "./components/SyncButton.js";
-import "./components/InboundButton.js";
 import "./components/Connection.js";
+import "./components/InboundButton.js";
+import "./components/ModalDialog.js";
+import "./components/ModalMessage.js";
+import "./components/SyncButton.js";
 import "./components/SyncForm.js";
-import "./components/icons/SyncIcon.js";
 import "./components/icons/CodeSpinIcon.js";
+import "./components/icons/SyncIcon.js";
 
-import { getProjectSyncUrl } from "../projectSyncUrls.js";
-import * as syncStatusStore from "../syncStatusStore.js";
 import { InboundButton } from "./components/InboundButton.js";
 
 /**

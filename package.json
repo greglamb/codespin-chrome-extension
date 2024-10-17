@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "side-drawer": "^4.2.0",
-    "webjsx": "^0.0.26"
+    "webjsx": "^0.0.29"
   }
 }
