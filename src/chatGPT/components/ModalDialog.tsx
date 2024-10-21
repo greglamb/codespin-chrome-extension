@@ -86,7 +86,7 @@ export class ModalDialog<T> extends HTMLElement {
 
   // Close the dialog and resolve the promise with a value or undefined
   #closeDialog(value?: T) {
-    document.body.removeChild(this);
+    document.body.removeChild(this.parentElement!);
     if (this.#resolve) {
       this.#resolve(value); // Resolve with the value or undefined if canceled
     }

@@ -46,23 +46,20 @@ export class ModalMessage extends HTMLElement {
 
   render() {
     const vdom = (
-      <>
-        {/* Use ModalDialog internally */}
-        <codespin-modal-dialog
-          ref={(el) => (this.#modalDialog = el as ModalDialog<void>)}
-        >
-          <div slot="content">
-            <h3>{this.#title}</h3>
-            <p>{this.#message}</p>
-          </div>
+      <codespin-modal-dialog
+        ref={(el) => (this.#modalDialog = el as ModalDialog<void>)}
+      >
+        <div slot="content">
+          <h3>{this.#title}</h3>
+          <p>{this.#message}</p>
+        </div>
 
-          <div slot="buttons">
-            <button type="button" onclick={() => this.close()}>
-              OK
-            </button>
-          </div>
-        </codespin-modal-dialog>
-      </>
+        <div slot="buttons">
+          <button type="button" onclick={() => this.close()}>
+            OK
+          </button>
+        </div>
+      </codespin-modal-dialog>
     );
     webjsx.applyDiff(this, vdom);
   }
