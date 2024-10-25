@@ -45,7 +45,7 @@ export class ModalDialog<T> extends HTMLElement {
           id="codespin-dialog"
           style="
             width: 480px;
-            padding: 12px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -86,7 +86,9 @@ export class ModalDialog<T> extends HTMLElement {
 
   // Close the dialog and resolve the promise with a value or undefined
   #closeDialog(value?: T) {
-    document.body.removeChild(this.parentElement!);
+    document.body.removeChild(
+      this.parentElement || (this.getRootNode() as ShadowRoot).host
+    );
     if (this.#resolve) {
       this.#resolve(value); // Resolve with the value or undefined if canceled
     }

@@ -34,12 +34,26 @@ export async function validateConnection<TResult, TError extends string>(
       if (result.error === FAILED_TO_CONNECT) {
         await new Promise<void>((resolve) => {
           const connectionForm = webjsx.createNode(
-            <codespin-modal-message
-              title="Failed to Connecter"
-              message="Could not connect. Check if you're running the codefix server
-                  in the project directory."
-              resolve={resolve}
-            ></codespin-modal-message>
+            <codespin-modal-message resolve={resolve}>
+              <h3 style="font-size: 16px; font-weight: bold;" slot="title">
+                Failed to Connect
+              </h3>
+              <div slot="message">
+                <p>
+                  Could not connect. Check if you're running the codefix server
+                  in the project directory.
+                </p>
+                <p style="padding-top: 8px">
+                  See more at{" "}
+                  <a
+                    style="text-decoration: underline"
+                    href="https://codespin.com/extension/help"
+                  >
+                    https://codespin.com/extension/help
+                  </a>
+                </p>
+              </div>
+            </codespin-modal-message>
           ) as ModalMessage;
           document.body.appendChild(connectionForm);
         });

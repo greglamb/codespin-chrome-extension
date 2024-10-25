@@ -26,7 +26,7 @@ export class InboundButton extends HTMLElement {
   render() {
     const vdom = (
       <button
-        class="flex items-center justify-center h-8 w-8 rounded-full text-token-text-primary dark:text-white focus-visible:outline-black dark:focus-visible:outline-white mb-1"
+        class="flex items-center justify-center h-8 w-8 rounded-full text-token-text-primary dark:text-white focus-visible:outline-black dark:focus-visible:outline-white mb-1; padding: 0; margin: 0;"
         aria-disabled="false"
         aria-label="CodeSpin Attach"
         id="codespin-inbound-button"

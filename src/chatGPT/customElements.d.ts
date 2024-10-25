@@ -20,8 +20,7 @@ declare module "webjsx" {
       };
       "codespin-modal-message": {
         resolve?: () => void;
-        title: string;
-        message: string;
+        children: VNode | VNode[];
       };
       "side-drawer": {
         id?: string;
