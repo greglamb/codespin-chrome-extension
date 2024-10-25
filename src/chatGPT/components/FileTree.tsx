@@ -58,8 +58,8 @@ export class FileTreeSelector extends HTMLElement {
     this.render();
   }
 
-  renderNode(node: FileSystemNode, path: string) {
-    const isExpanded = this.#expandedNodes.has(path);
+  renderNode(node: FileSystemNode, path: string, isRoot: boolean = false) {
+    const isExpanded = isRoot || this.#expandedNodes.has(path);
     const isSelected = this.#selectedFiles.has(path);
     const fullPath = path ? `${path}/${node.name}` : node.name;
 
@@ -98,7 +98,7 @@ export class FileTreeSelector extends HTMLElement {
           class="dir-item"
           style={`
             padding: 4px 8px;
-            padding-left: 24px;
+            padding-left: ${isRoot ? "8px" : "24px"};
             display: flex;
             align-items: center;
             gap: 8px;
@@ -106,16 +106,18 @@ export class FileTreeSelector extends HTMLElement {
             user-select: none;
           `}
           onclick={(e) => {
-            e.stopPropagation();
-            this.toggleNode(fullPath);
+            if (!isRoot) {
+              e.stopPropagation();
+              this.toggleNode(fullPath);
+            }
           }}
         >
-          <span>{isExpanded ? "▾" : "▸"}</span>
+          {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
           <span>📁</span>
-          <span>{node.name}</span>
+          <span>{isRoot ? "Project Files" : node.name}</span>
         </div>
         {isExpanded && node.contents && (
-          <div style="margin-left: 12px;">
+          <div style={`margin-left: ${isRoot ? "0px" : "12px"};`}>
             {node.contents.map((child) => this.renderNode(child, fullPath))}
           </div>
         )}
@@ -151,7 +153,7 @@ export class FileTreeSelector extends HTMLElement {
         {this.#error && (
           <div style="padding: 8px 24px; color: #f14c4c;">{this.#error}</div>
         )}
-        {this.#files && this.renderNode(this.#files, "")}
+        {this.#files && this.renderNode(this.#files, "", true)}
 
         <div
           style="
