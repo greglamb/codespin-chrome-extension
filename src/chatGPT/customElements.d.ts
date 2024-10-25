@@ -22,6 +22,10 @@ declare module "webjsx" {
         resolve?: () => void;
         children: VNode | VNode[];
       };
+      "codespin-file-tree": {
+        onselect?: (event: CustomEvent<string[]>) => void;
+        oncancel?: (event: Event) => void;
+      };
       "side-drawer": {
         id?: string;
         open?: boolean;

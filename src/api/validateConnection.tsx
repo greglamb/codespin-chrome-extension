@@ -1,5 +1,6 @@
 import * as webjsx from "webjsx";
 import { Connection } from "../chatGPT/components/Connection.js";
+import { ModalMessage } from "../chatGPT/components/ModalMessage.js";
 import {
   ConnectionInfo,
   ErrorResult,
@@ -7,8 +8,6 @@ import {
   MISSING_KEY,
   UNAUTHORIZED,
 } from "../messageTypes.js";
-import { ModalDialog } from "../chatGPT/components/ModalDialog.js";
-import { ModalMessage } from "../chatGPT/components/ModalMessage.js";
 
 export async function validateConnection<TResult, TError extends string>(
   result: ErrorResult<TError>,
