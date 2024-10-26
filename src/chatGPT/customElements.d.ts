@@ -22,9 +22,16 @@ declare module "webjsx" {
         resolve?: () => void;
         children: VNode | VNode[];
       };
+      "codespin-file-importer": {
+        onselect?: (event: CustomEvent<string[]>) => void;
+        oncancel?: (event: Event) => void;
+      };
       "codespin-file-tree": {
         onselect?: (event: CustomEvent<string[]>) => void;
         oncancel?: (event: Event) => void;
+      };
+      "codespin-file-content-viewer": {
+        style?: string;
       };
       "side-drawer": {
         id?: string;

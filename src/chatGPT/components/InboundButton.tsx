@@ -45,7 +45,7 @@ export class InboundButton extends HTMLElement {
             max-height: 80vh;
           "
         >
-          <codespin-file-tree
+          <codespin-file-importer
             onselect={(e: CustomEvent<string[]>) => {
               console.log("Selected files:", e.detail);
               (
@@ -57,7 +57,7 @@ export class InboundButton extends HTMLElement {
                 this.querySelector("#file-select-dialog") as HTMLDialogElement
               ).close();
             }}
-          ></codespin-file-tree>
+          ></codespin-file-importer>
         </dialog>
       </>
     );

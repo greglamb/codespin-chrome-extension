@@ -50,31 +50,39 @@ export class FileTreeSelector extends HTMLElement {
     this.render();
   }
 
-  handleSelect(e: MouseEvent, path: string) {
+  handleSelect(e: MouseEvent, path: string, node: FileSystemNode) {
     e.stopPropagation();
 
-    if (e.ctrlKey || e.metaKey) {
-      if (this.#selectedFiles.has(path)) {
-        this.#selectedFiles.delete(path);
+    if (node.type === "file") {
+      if (e.ctrlKey) {
+        // Toggle selection when Ctrl is pressed
+        if (this.#selectedFiles.has(path)) {
+          this.#selectedFiles.delete(path);
+        } else {
+          this.#selectedFiles.add(path);
+        }
       } else {
+        // Clear selection and select only this file when Ctrl is not pressed
+        this.#selectedFiles.clear();
         this.#selectedFiles.add(path);
       }
-    } else {
-      this.#selectedFiles.clear();
-      this.#selectedFiles.add(path);
+
+      const detail = Array.from(this.#selectedFiles);
+      this.dispatchEvent(new CustomEvent("select", { detail }));
     }
+
     this.render();
   }
 
   renderNode(node: FileSystemNode, path: string, isRoot: boolean = false) {
     const fullPath = path ? `${path}/${node.name}` : node.name;
     const isExpanded = isRoot || this.#expandedNodes.has(fullPath);
-    const isSelected = this.#selectedFiles.has(path);
+    const isSelected = this.#selectedFiles.has(fullPath);
 
     if (node.type === "file") {
       return (
         <div
-          class="file-item"
+          class={`file-item ${isSelected ? "selected" : ""}`}
           style={`
             padding: 4px 8px;
             padding-left: 24px;
@@ -83,16 +91,17 @@ export class FileTreeSelector extends HTMLElement {
             gap: 8px;
             cursor: pointer;
             ${isSelected ? "background-color: #2b579a; color: white;" : ""}
+            position: relative;
           `}
-          onclick={(e) => this.handleSelect(e, fullPath)}
+          onclick={(e) => this.handleSelect(e, fullPath, node)}
         >
           <span>📄</span>
           <span>{node.name}</span>
           <span
             style={`
-            color: ${isSelected ? "#ccc" : "#666"}; 
-            font-size: 0.8em;
-          `}
+              color: ${isSelected ? "#ccc" : "#666"}; 
+              font-size: 0.8em;
+            `}
           >
             ({node.length} bytes)
           </span>
@@ -130,66 +139,34 @@ export class FileTreeSelector extends HTMLElement {
 
   render() {
     const vdom = (
-      <div style=" background: #1e1e1e; color: #d4d4d4; padding: 8px 0; border-radius: 4px; max-height: 500px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+      <div style="height: 100%; background: #252526; border-radius: 4px; overflow-y: auto; font-size: 13px;">
         <style>
           {`
+            .file-item {
+              position: relative;
+              transition: background-color 0.1s ease;
+            }
             .file-item:hover {
               background-color: #2b579a44;
+            }
+            .file-item.selected {
+              background-color: #2b579a;
+              color: white;
+            }
+            .file-item.selected:hover {
+              background-color: #2b579add;
             }
             .dir-item:hover {
               background-color: #2b579a22;
             }
           `}
         </style>
-        <div style="overflow-y: auto; font-size: 13px;">
-          {this.#loading && <div style="padding: 8px 24px;">Loading...</div>}
-          {this.#error && (
-            <div style="padding: 8px 24px; color: #f14c4c;">{this.#error}</div>
-          )}
-          {this.#files && this.renderNode(this.#files, "", true)}
 
-          <div
-            style="
-          margin-top: 16px;
-          padding: 8px 24px;
-          border-top: 1px solid #333;
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-        "
-          >
-            <button
-              onclick={() => this.dispatchEvent(new Event("cancel"))}
-              style="
-              padding: 6px 12px;
-              background: #333;
-              border: none;
-              color: white;
-              border-radius: 4px;
-              cursor: pointer;
-            "
-            >
-              Cancel
-            </button>
-            <button
-              onclick={() => {
-                const detail = Array.from(this.#selectedFiles);
-                this.dispatchEvent(new CustomEvent("select", { detail }));
-              }}
-              style="
-              padding: 6px 12px;
-              background: #2b579a;
-              border: none;
-              color: white;
-              border-radius: 4px;
-              cursor: pointer;
-            "
-            >
-              Select {this.#selectedFiles.size} file
-              {this.#selectedFiles.size !== 1 ? "s" : ""}
-            </button>
-          </div>
-        </div>
+        {this.#loading && <div style="padding: 8px 24px;">Loading...</div>}
+        {this.#error && (
+          <div style="padding: 8px 24px; color: #f14c4c;">{this.#error}</div>
+        )}
+        {this.#files && this.renderNode(this.#files, "", true)}
       </div>
     );
 

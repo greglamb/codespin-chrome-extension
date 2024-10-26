@@ -13,6 +13,7 @@ export type Result<T, TError = string> = ValidResult<T> | ErrorResult<TError>;
 // Message types
 export const CODESPIN_SAVE_CONNECTION = "CODESPIN_SAVE_CONNECTION";
 export const CODESPIN_GET_FILES = "CODESPIN_GET_FILES";
+export const CODESPIN_GET_FILE_CONTENT = "CODESPIN_GET_FILE_CONTENT";
 
 // Error codes
 export const UNAUTHORIZED = "UNAUTHORIZED";

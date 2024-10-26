@@ -7,7 +7,9 @@ import "./components/ModalDialog.js";
 import "./components/ModalMessage.js";
 import "./components/SyncButton.js";
 import "./components/SyncForm.js";
+import "./components/FileImporter.js";
 import "./components/FileTree.js";
+import "./components/FileContentViewer.js";
 import "./components/icons/CodeSpinIcon.js";
 import "./components/icons/SyncIcon.js";
 
