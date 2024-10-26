@@ -27,3 +27,7 @@ export type FileSystemNode =
   | { type: "dir"; name: string; contents: FileSystemNode[] };
 
 export type ConnectionInfo = { port: string; key: string };
+
+export type FileContent = {
+  contents: string;
+};

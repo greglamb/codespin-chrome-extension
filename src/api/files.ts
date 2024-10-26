@@ -2,14 +2,16 @@ import { withDisposable } from "../IDisposable.js";
 import {
   CODESPIN_GET_FILE_CONTENT,
   CODESPIN_GET_FILES,
+  FileContent,
+  FileSystemNode,
+  ValidResult,
 } from "../messageTypes.js";
 import { getMessageBrokerClient } from "./broker.js";
 import { validateConnection } from "./validateConnection.js";
 
 type BrokerClient = ReturnType<typeof getMessageBrokerClient>;
-type SendResult = Awaited<ReturnType<BrokerClient["send"]>>;
 
-export async function getFiles(): Promise<SendResult | void> {
+export async function getFiles(): Promise<ValidResult<FileSystemNode> | void> {
   return await withDisposable(getMessageBrokerClient, async (broker) => {
     const result = await broker.send(CODESPIN_GET_FILES, {});
 
@@ -21,7 +23,9 @@ export async function getFiles(): Promise<SendResult | void> {
   });
 }
 
-export async function getFileContent(path: string): Promise<any> {
+export async function getFileContent(
+  path: string
+): Promise<ValidResult<FileContent> | void> {
   return await withDisposable(getMessageBrokerClient, async (broker) => {
     const result = await broker.send(CODESPIN_GET_FILE_CONTENT, { path });
 

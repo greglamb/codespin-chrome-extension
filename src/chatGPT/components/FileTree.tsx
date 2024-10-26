@@ -54,27 +54,30 @@ export class FileTreeSelector extends HTMLElement {
     e.stopPropagation();
 
     if (node.type === "file") {
-      const prevSize = this.#selectedFiles.size;
-      if (e.ctrlKey) {
-        // Toggle selection when Ctrl is pressed
+      const prevSelection = new Set(this.#selectedFiles);
+
+      if (!e.ctrlKey && !e.metaKey) {
+        // Single click without Ctrl/Cmd - clear selection and select only this file
+        this.#selectedFiles.clear();
+        this.#selectedFiles.add(path);
+      } else {
+        // Ctrl/Cmd click - toggle selection
         if (this.#selectedFiles.has(path)) {
           this.#selectedFiles.delete(path);
         } else {
           this.#selectedFiles.add(path);
         }
-      } else {
-        // Clear selection and select only this file when Ctrl is not pressed
-        this.#selectedFiles.clear();
-        this.#selectedFiles.add(path);
       }
 
-      // Only dispatch if the selection actually changed
+      // Only dispatch if selection actually changed
+      const newSelection = Array.from(this.#selectedFiles);
+      const prevArray = Array.from(prevSelection);
       if (
-        prevSize !== this.#selectedFiles.size ||
-        !this.#selectedFiles.has(path)
+        newSelection.length !== prevArray.length ||
+        !newSelection.every((file) => prevSelection.has(file))
       ) {
-        const detail = Array.from(this.#selectedFiles);
-        this.dispatchEvent(new CustomEvent("select", { detail }));
+        console.log("Selection changed:", newSelection);
+        this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
       }
     }
 

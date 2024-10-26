@@ -14,57 +14,45 @@ export class FileImporter extends HTMLElement {
     this.render();
   }
 
-  async handleFileSelect(e: CustomEvent<string[]>) {
-    // Clear the existing selection and add new files
-    this.#selectedFiles.clear();
-    e.detail.forEach((file) => this.#selectedFiles.add(file));
+  async handleFileSelect(e: CustomEvent) {
+    const newSelection = e.detail;
+    console.log('FileImporter received new selection:', newSelection);
+    
+    // Always create a new Set from the event detail
+    this.#selectedFiles = new Set(newSelection);
+    
+    const selectedCount = this.#selectedFiles.size;
+    console.log('Updated selection count:', selectedCount);
 
-    // If there's exactly one file selected, show its contents
-    if (this.#selectedFiles.size === 1) {
-      const selectedFile = Array.from(this.#selectedFiles)[0];
-      try {
-        const response = await getFileContent(selectedFile);
-        if (response?.success) {
-          const viewer = this.shadowRoot!.querySelector(
-            "codespin-file-content-viewer"
-          );
-          if (viewer instanceof HTMLElement) {
-            (viewer as any).setContent(response.result);
+    // Update content viewer based on selection
+    const viewer = this.shadowRoot!.querySelector(
+      "codespin-file-content-viewer"
+    ) as any;
+
+    if (viewer) {
+      if (selectedCount === 0) {
+        viewer.setContent("");
+      } else if (selectedCount === 1) {
+        try {
+          const selectedFile = Array.from(this.#selectedFiles)[0];
+          const response = await getFileContent(selectedFile);
+          if (response?.success) {
+            viewer.setContent(response.result.contents);
           }
+        } catch (err: any) {
+          viewer.setContent(`Error loading file contents: ${err.message}`);
         }
-      } catch (err: any) {
-        const viewer = this.shadowRoot!.querySelector(
-          "codespin-file-content-viewer"
-        );
-        if (viewer instanceof HTMLElement) {
-          (viewer as any).setContent(
-            `Error loading file contents: ${err.message}`
-          );
-        }
-      }
-    } else if (this.#selectedFiles.size === 0) {
-      // Clear the viewer if no files are selected
-      const viewer = this.shadowRoot!.querySelector(
-        "codespin-file-content-viewer"
-      );
-      if (viewer instanceof HTMLElement) {
-        (viewer as any).setContent("");
-      }
-    } else {
-      // Show a message when multiple files are selected
-      const viewer = this.shadowRoot!.querySelector(
-        "codespin-file-content-viewer"
-      );
-      if (viewer instanceof HTMLElement) {
-        (viewer as any).setContent(
-          `${
-            this.#selectedFiles.size
-          } files selected. Select a single file to view its contents.`
+      } else {
+        viewer.setContent(
+          `${selectedCount} files selected. Select a single file to view its contents.`
         );
       }
     }
-
-    this.render();
+    
+    // Force a render
+    requestAnimationFrame(() => {
+      this.render();
+    });
   }
 
   handleCancel() {
@@ -77,6 +65,9 @@ export class FileImporter extends HTMLElement {
   }
 
   render() {
+    const selectedCount = this.#selectedFiles.size;
+    console.log('FileImporter rendering with count:', selectedCount);
+
     const vdom = (
       <div
         style="
@@ -92,20 +83,20 @@ export class FileImporter extends HTMLElement {
           border-radius: 4px;
         "
       >
-        {/* Left Pane - File Tree */}
         <div style="flex: 0 0 300px; overflow: hidden;">
           <codespin-file-tree
-            onselect={(e) => this.handleFileSelect(e)}
+            onselect={(e) => {
+              console.log('FileTree select event received');
+              this.handleFileSelect(e);
+            }}
             oncancel={() => this.handleCancel()}
           ></codespin-file-tree>
         </div>
 
-        {/* Right Pane - Content Viewer */}
         <div style="flex: 1; overflow: hidden;">
           <codespin-file-content-viewer style="height: 100%;"></codespin-file-content-viewer>
         </div>
 
-        {/* Bottom Buttons */}
         <div
           style="
             position: absolute;
@@ -130,23 +121,18 @@ export class FileImporter extends HTMLElement {
           </button>
           <button
             onclick={() => this.handleSelect()}
-            disabled={this.#selectedFiles.size === 0}
+            disabled={selectedCount === 0}
             style={`
               padding: 6px 12px;
-              background: ${
-                this.#selectedFiles.size === 0 ? "#555" : "#2b579a"
-              };
+              background: ${selectedCount === 0 ? '#555' : '#2b579a'};
               border: none;
               color: white;
               border-radius: 4px;
-              cursor: ${
-                this.#selectedFiles.size === 0 ? "not-allowed" : "pointer"
-              };
-              opacity: ${this.#selectedFiles.size === 0 ? "0.7" : "1"};
+              cursor: ${selectedCount === 0 ? 'not-allowed' : 'pointer'};
+              opacity: ${selectedCount === 0 ? '0.7' : '1'};
             `}
           >
-            Select {this.#selectedFiles.size} file
-            {this.#selectedFiles.size !== 1 ? "s" : ""}
+            Select {selectedCount} file{selectedCount !== 1 ? "s" : ""}
           </button>
         </div>
       </div>
