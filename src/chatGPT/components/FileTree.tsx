@@ -40,7 +40,8 @@ export class FileTreeSelector extends HTMLElement {
     }
   }
 
-  toggleNode(path: string) {
+  toggleNode(e: Event, path: string) {
+    e.stopPropagation();
     if (this.#expandedNodes.has(path)) {
       this.#expandedNodes.delete(path);
     } else {
@@ -49,10 +50,19 @@ export class FileTreeSelector extends HTMLElement {
     this.render();
   }
 
-  toggleSelect(path: string) {
-    if (this.#selectedFiles.has(path)) {
-      this.#selectedFiles.delete(path);
+  handleSelect(e: MouseEvent, path: string) {
+    e.stopPropagation();
+
+    if (e.ctrlKey || e.metaKey) {
+      // Control/Command click: toggle selection
+      if (this.#selectedFiles.has(path)) {
+        this.#selectedFiles.delete(path);
+      } else {
+        this.#selectedFiles.add(path);
+      }
     } else {
+      // Regular click: clear other selections and select only this one
+      this.#selectedFiles.clear();
       this.#selectedFiles.add(path);
     }
     this.render();
@@ -76,9 +86,8 @@ export class FileTreeSelector extends HTMLElement {
             cursor: pointer;
             ${isSelected ? "background-color: #2b579a; color: white;" : ""}
           `}
-          onclick={() => this.toggleSelect(fullPath)}
+          onclick={(e) => this.handleSelect(e, fullPath)}
         >
-          <span>📄</span>
           <span>{node.name}</span>
           <span
             style={`
@@ -105,16 +114,26 @@ export class FileTreeSelector extends HTMLElement {
             cursor: pointer;
             user-select: none;
           `}
-          onclick={(e) => {
-            if (!isRoot) {
-              e.stopPropagation();
-              this.toggleNode(fullPath);
-            }
-          }}
         >
-          {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
-          <span>📁</span>
-          <span>{isRoot ? "Project Files" : node.name}</span>
+          {!isRoot && (
+            <span
+              onclick={(e) => this.toggleNode(e, fullPath)}
+              style="cursor: pointer; width: 16px; text-align: center;"
+            >
+              {isExpanded ? "▾" : "▸"}
+            </span>
+          )}
+          <span
+            style="display: flex; align-items: center; gap: 8px; flex: 1;"
+            onclick={(e) => {
+              if (!isRoot) {
+                this.handleSelect(e, fullPath);
+              }
+            }}
+          >
+            <span>📁</span>
+            <span>{isRoot ? "Project Files" : node.name}</span>
+          </span>
         </div>
         {isExpanded && node.contents && (
           <div style={`margin-left: ${isRoot ? "0px" : "12px"};`}>
