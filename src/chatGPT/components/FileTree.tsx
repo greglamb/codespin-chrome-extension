@@ -40,7 +40,7 @@ export class FileTreeSelector extends HTMLElement {
     }
   }
 
-  toggleNode(e: Event, path: string) {
+  handleDirClick(e: MouseEvent, path: string) {
     e.stopPropagation();
     if (this.#expandedNodes.has(path)) {
       this.#expandedNodes.delete(path);
@@ -54,14 +54,12 @@ export class FileTreeSelector extends HTMLElement {
     e.stopPropagation();
 
     if (e.ctrlKey || e.metaKey) {
-      // Control/Command click: toggle selection
       if (this.#selectedFiles.has(path)) {
         this.#selectedFiles.delete(path);
       } else {
         this.#selectedFiles.add(path);
       }
     } else {
-      // Regular click: clear other selections and select only this one
       this.#selectedFiles.clear();
       this.#selectedFiles.add(path);
     }
@@ -69,9 +67,9 @@ export class FileTreeSelector extends HTMLElement {
   }
 
   renderNode(node: FileSystemNode, path: string, isRoot: boolean = false) {
-    const isExpanded = isRoot || this.#expandedNodes.has(path);
-    const isSelected = this.#selectedFiles.has(path);
     const fullPath = path ? `${path}/${node.name}` : node.name;
+    const isExpanded = isRoot || this.#expandedNodes.has(fullPath);
+    const isSelected = this.#selectedFiles.has(path);
 
     if (node.type === "file") {
       return (
@@ -88,6 +86,7 @@ export class FileTreeSelector extends HTMLElement {
           `}
           onclick={(e) => this.handleSelect(e, fullPath)}
         >
+          <span>📄</span>
           <span>{node.name}</span>
           <span
             style={`
@@ -114,26 +113,11 @@ export class FileTreeSelector extends HTMLElement {
             cursor: pointer;
             user-select: none;
           `}
+          onclick={(e) => !isRoot && this.handleDirClick(e, fullPath)}
         >
-          {!isRoot && (
-            <span
-              onclick={(e) => this.toggleNode(e, fullPath)}
-              style="cursor: pointer; width: 16px; text-align: center;"
-            >
-              {isExpanded ? "▾" : "▸"}
-            </span>
-          )}
-          <span
-            style="display: flex; align-items: center; gap: 8px; flex: 1;"
-            onclick={(e) => {
-              if (!isRoot) {
-                this.handleSelect(e, fullPath);
-              }
-            }}
-          >
-            <span>📁</span>
-            <span>{isRoot ? "Project Files" : node.name}</span>
-          </span>
+          {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
+          <span>📁</span>
+          <span>{isRoot ? "Project Files" : node.name}</span>
         </div>
         {isExpanded && node.contents && (
           <div style={`margin-left: ${isRoot ? "0px" : "12px"};`}>
@@ -146,18 +130,7 @@ export class FileTreeSelector extends HTMLElement {
 
   render() {
     const vdom = (
-      <div
-        style="
-        background: #1e1e1e;
-        color: #d4d4d4;
-        padding: 8px 0;
-        border-radius: 4px;
-        max-height: 500px;
-        overflow-y: auto;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 13px;
-      "
-      >
+      <div style=" background: #1e1e1e; color: #d4d4d4; padding: 8px 0; border-radius: 4px; max-height: 500px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
         <style>
           {`
             .file-item:hover {
@@ -168,14 +141,15 @@ export class FileTreeSelector extends HTMLElement {
             }
           `}
         </style>
-        {this.#loading && <div style="padding: 8px 24px;">Loading...</div>}
-        {this.#error && (
-          <div style="padding: 8px 24px; color: #f14c4c;">{this.#error}</div>
-        )}
-        {this.#files && this.renderNode(this.#files, "", true)}
+        <div style="overflow-y: auto; font-size: 13px;">
+          {this.#loading && <div style="padding: 8px 24px;">Loading...</div>}
+          {this.#error && (
+            <div style="padding: 8px 24px; color: #f14c4c;">{this.#error}</div>
+          )}
+          {this.#files && this.renderNode(this.#files, "", true)}
 
-        <div
-          style="
+          <div
+            style="
           margin-top: 16px;
           padding: 8px 24px;
           border-top: 1px solid #333;
@@ -183,10 +157,10 @@ export class FileTreeSelector extends HTMLElement {
           justify-content: flex-end;
           gap: 8px;
         "
-        >
-          <button
-            onclick={() => this.dispatchEvent(new Event("cancel"))}
-            style="
+          >
+            <button
+              onclick={() => this.dispatchEvent(new Event("cancel"))}
+              style="
               padding: 6px 12px;
               background: #333;
               border: none;
@@ -194,15 +168,15 @@ export class FileTreeSelector extends HTMLElement {
               border-radius: 4px;
               cursor: pointer;
             "
-          >
-            Cancel
-          </button>
-          <button
-            onclick={() => {
-              const detail = Array.from(this.#selectedFiles);
-              this.dispatchEvent(new CustomEvent("select", { detail }));
-            }}
-            style="
+            >
+              Cancel
+            </button>
+            <button
+              onclick={() => {
+                const detail = Array.from(this.#selectedFiles);
+                this.dispatchEvent(new CustomEvent("select", { detail }));
+              }}
+              style="
               padding: 6px 12px;
               background: #2b579a;
               border: none;
@@ -210,10 +184,11 @@ export class FileTreeSelector extends HTMLElement {
               border-radius: 4px;
               cursor: pointer;
             "
-          >
-            Select {this.#selectedFiles.size} file
-            {this.#selectedFiles.size !== 1 ? "s" : ""}
-          </button>
+            >
+              Select {this.#selectedFiles.size} file
+              {this.#selectedFiles.size !== 1 ? "s" : ""}
+            </button>
+          </div>
         </div>
       </div>
     );
