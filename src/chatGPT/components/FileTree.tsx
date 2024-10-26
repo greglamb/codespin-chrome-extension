@@ -54,6 +54,7 @@ export class FileTreeSelector extends HTMLElement {
     e.stopPropagation();
 
     if (node.type === "file") {
+      const prevSize = this.#selectedFiles.size;
       if (e.ctrlKey) {
         // Toggle selection when Ctrl is pressed
         if (this.#selectedFiles.has(path)) {
@@ -67,8 +68,14 @@ export class FileTreeSelector extends HTMLElement {
         this.#selectedFiles.add(path);
       }
 
-      const detail = Array.from(this.#selectedFiles);
-      this.dispatchEvent(new CustomEvent("select", { detail }));
+      // Only dispatch if the selection actually changed
+      if (
+        prevSize !== this.#selectedFiles.size ||
+        !this.#selectedFiles.has(path)
+      ) {
+        const detail = Array.from(this.#selectedFiles);
+        this.dispatchEvent(new CustomEvent("select", { detail }));
+      }
     }
 
     this.render();

@@ -15,11 +15,13 @@ export class FileImporter extends HTMLElement {
   }
 
   async handleFileSelect(e: CustomEvent<string[]>) {
-    const [selectedFile] = e.detail;
-    if (selectedFile) {
-      this.#selectedFiles.clear();
-      this.#selectedFiles.add(selectedFile);
+    // Clear the existing selection and add new files
+    this.#selectedFiles.clear();
+    e.detail.forEach((file) => this.#selectedFiles.add(file));
 
+    // If there's exactly one file selected, show its contents
+    if (this.#selectedFiles.size === 1) {
+      const selectedFile = Array.from(this.#selectedFiles)[0];
       try {
         const response = await getFileContent(selectedFile);
         if (response?.success) {
@@ -40,7 +42,28 @@ export class FileImporter extends HTMLElement {
           );
         }
       }
+    } else if (this.#selectedFiles.size === 0) {
+      // Clear the viewer if no files are selected
+      const viewer = this.shadowRoot!.querySelector(
+        "codespin-file-content-viewer"
+      );
+      if (viewer instanceof HTMLElement) {
+        (viewer as any).setContent("");
+      }
+    } else {
+      // Show a message when multiple files are selected
+      const viewer = this.shadowRoot!.querySelector(
+        "codespin-file-content-viewer"
+      );
+      if (viewer instanceof HTMLElement) {
+        (viewer as any).setContent(
+          `${
+            this.#selectedFiles.size
+          } files selected. Select a single file to view its contents.`
+        );
+      }
     }
+
     this.render();
   }
 
@@ -107,14 +130,20 @@ export class FileImporter extends HTMLElement {
           </button>
           <button
             onclick={() => this.handleSelect()}
-            style="
+            disabled={this.#selectedFiles.size === 0}
+            style={`
               padding: 6px 12px;
-              background: #2b579a;
+              background: ${
+                this.#selectedFiles.size === 0 ? "#555" : "#2b579a"
+              };
               border: none;
               color: white;
               border-radius: 4px;
-              cursor: pointer;
-            "
+              cursor: ${
+                this.#selectedFiles.size === 0 ? "not-allowed" : "pointer"
+              };
+              opacity: ${this.#selectedFiles.size === 0 ? "0.7" : "1"};
+            `}
           >
             Select {this.#selectedFiles.size} file
             {this.#selectedFiles.size !== 1 ? "s" : ""}
