@@ -1,6 +1,7 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
 import { getFileContent } from "../../api/files.js";
+import { FileContentViewer } from "./FileContentViewer.js";
 
 export class FileImporter extends HTMLElement {
   #selectedFiles: Set<string> = new Set();
@@ -16,39 +17,46 @@ export class FileImporter extends HTMLElement {
 
   async handleFileSelect(e: CustomEvent) {
     const newSelection = e.detail;
-    console.log('FileImporter received new selection:', newSelection);
-    
+    console.log("FileImporter received new selection:", newSelection);
+
     // Always create a new Set from the event detail
     this.#selectedFiles = new Set(newSelection);
-    
+
     const selectedCount = this.#selectedFiles.size;
-    console.log('Updated selection count:', selectedCount);
+    console.log("Updated selection count:", selectedCount);
 
     // Update content viewer based on selection
     const viewer = this.shadowRoot!.querySelector(
       "codespin-file-content-viewer"
-    ) as any;
+    ) as FileContentViewer;
 
     if (viewer) {
       if (selectedCount === 0) {
-        viewer.setContent("");
+        viewer.setContent("", undefined);
       } else if (selectedCount === 1) {
         try {
           const selectedFile = Array.from(this.#selectedFiles)[0];
           const response = await getFileContent(selectedFile);
           if (response?.success) {
-            viewer.setContent(response.result.contents);
+            viewer.setContent(
+              response.result.contents,
+              response.result.filename
+            );
           }
         } catch (err: any) {
-          viewer.setContent(`Error loading file contents: ${err.message}`);
+          viewer.setContent(
+            `Error loading file contents: ${err.message}`,
+            undefined
+          );
         }
       } else {
         viewer.setContent(
-          `${selectedCount} files selected. Select a single file to view its contents.`
+          `${selectedCount} files selected. Select a single file to view its contents.`,
+          undefined
         );
       }
     }
-    
+
     // Force a render
     requestAnimationFrame(() => {
       this.render();
@@ -66,7 +74,7 @@ export class FileImporter extends HTMLElement {
 
   render() {
     const selectedCount = this.#selectedFiles.size;
-    console.log('FileImporter rendering with count:', selectedCount);
+    console.log("FileImporter rendering with count:", selectedCount);
 
     const vdom = (
       <div
@@ -86,7 +94,7 @@ export class FileImporter extends HTMLElement {
         <div style="flex: 0 0 300px; overflow: hidden;">
           <codespin-file-tree
             onselect={(e) => {
-              console.log('FileTree select event received');
+              console.log("FileTree select event received");
               this.handleFileSelect(e);
             }}
             oncancel={() => this.handleCancel()}
@@ -124,12 +132,12 @@ export class FileImporter extends HTMLElement {
             disabled={selectedCount === 0}
             style={`
               padding: 6px 12px;
-              background: ${selectedCount === 0 ? '#555' : '#2b579a'};
+              background: ${selectedCount === 0 ? "#555" : "#2b579a"};
               border: none;
               color: white;
               border-radius: 4px;
-              cursor: ${selectedCount === 0 ? 'not-allowed' : 'pointer'};
-              opacity: ${selectedCount === 0 ? '0.7' : '1'};
+              cursor: ${selectedCount === 0 ? "not-allowed" : "pointer"};
+              opacity: ${selectedCount === 0 ? "0.7" : "1"};
             `}
           >
             Select {selectedCount} file{selectedCount !== 1 ? "s" : ""}

@@ -9,8 +9,6 @@ import {
 import { getMessageBrokerClient } from "./broker.js";
 import { validateConnection } from "./validateConnection.js";
 
-type BrokerClient = ReturnType<typeof getMessageBrokerClient>;
-
 export async function getFiles(): Promise<ValidResult<FileSystemNode> | void> {
   return await withDisposable(getMessageBrokerClient, async (broker) => {
     const result = await broker.send(CODESPIN_GET_FILES, {});

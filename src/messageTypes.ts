@@ -29,5 +29,9 @@ export type FileSystemNode =
 export type ConnectionInfo = { port: string; key: string };
 
 export type FileContent = {
+  type: "file";
+  filename: string;
+  path: string;
   contents: string;
+  size: number;
 };
