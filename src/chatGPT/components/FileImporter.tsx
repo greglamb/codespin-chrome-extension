@@ -5,6 +5,10 @@ import { FileContentViewer } from "./FileContentViewer.js";
 
 export class FileImporter extends HTMLElement {
   #selectedFiles: Set<string> = new Set();
+  #treeWidth: number = 300; // Default width
+  #isDragging: boolean = false;
+  #dragStartX: number = 0;
+  #dragStartWidth: number = 0;
 
   constructor() {
     super();
@@ -13,6 +17,52 @@ export class FileImporter extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.#setupDragListeners();
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener("mousemove", this.#handleMouseMove);
+    document.removeEventListener("mouseup", this.#handleMouseUp);
+  }
+
+  #handleMouseMove = (e: MouseEvent) => {
+    if (!this.#isDragging) return;
+
+    const deltaX = e.clientX - this.#dragStartX;
+    const newWidth = Math.max(
+      200,
+      Math.min(800, this.#dragStartWidth + deltaX)
+    );
+    this.#treeWidth = newWidth;
+    this.render();
+  };
+
+  #handleMouseUp = () => {
+    if (!this.#isDragging) return;
+
+    this.#isDragging = false;
+    document.removeEventListener("mousemove", this.#handleMouseMove);
+    document.removeEventListener("mouseup", this.#handleMouseUp);
+    const separator = this.shadowRoot!.querySelector(".separator");
+    if (separator) {
+      separator.classList.remove("dragging");
+    }
+  };
+
+  #setupDragListeners() {
+    const separator = this.shadowRoot!.querySelector(".separator");
+    if (!separator) return;
+
+    separator.addEventListener("mousedown", (e: Event) => {
+      this.#isDragging = true;
+      this.#dragStartX = (e as MouseEvent).clientX;
+      this.#dragStartWidth = this.#treeWidth;
+      separator.classList.add("dragging");
+
+      document.addEventListener("mousemove", this.#handleMouseMove);
+      document.addEventListener("mouseup", this.#handleMouseUp);
+      e.preventDefault();
+    });
   }
 
   async handleFileSelect(e: CustomEvent) {
@@ -76,6 +126,65 @@ export class FileImporter extends HTMLElement {
     const selectedCount = this.#selectedFiles.size;
     console.log("FileImporter rendering with count:", selectedCount);
 
+    const styles = `
+      .file-tree-container {
+        flex: 0 0 ${this.#treeWidth}px;
+        display: flex;
+        flex-direction: column;
+        min-width: 200px;
+        max-width: 800px;
+        height: 100%;
+      }
+      
+      .separator {
+        width: 8px;
+        margin: 0 -4px;
+        background: transparent;
+        position: relative;
+        cursor: col-resize;
+        z-index: 10;
+        flex: none;
+      }
+      
+      .separator::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #444;
+        transition: background 0.2s;
+      }
+      
+      .separator:hover::after,
+      .separator.dragging::after {
+        background: #666;
+      }
+      
+      codespin-file-tree {
+        height: 100%;
+        white-space: nowrap;
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: auto;
+      }
+      
+      .content-container {
+        flex: 1;
+        height: 100%;
+        overflow: hidden;
+        min-width: 0;
+      }
+
+      .main-container {
+        height: 100%;
+        display: flex;
+        gap: 0;
+      }
+    `;
+
     const vdom = (
       <div
         style="
@@ -90,31 +199,36 @@ export class FileImporter extends HTMLElement {
           align-items: center;
         "
       >
+        <style>{styles}</style>
         <div
           style="
             position: relative;
             width: calc(100% - 200px);
             height: calc(100% - 200px);
             display: flex;
-            gap: 16px;
+            flex-direction: column;
             background: #1e1e1e;
             padding: 16px;
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
           "
         >
-          <div style="flex: 0 0 300px; overflow: hidden;">
-            <codespin-file-tree
-              onselect={(e) => {
-                console.log("FileTree select event received");
-                this.handleFileSelect(e);
-              }}
-              oncancel={() => this.handleCancel()}
-            ></codespin-file-tree>
-          </div>
+          <div class="main-container">
+            <div class="file-tree-container">
+              <codespin-file-tree
+                onselect={(e) => {
+                  console.log("FileTree select event received");
+                  this.handleFileSelect(e);
+                }}
+                oncancel={() => this.handleCancel()}
+              ></codespin-file-tree>
+            </div>
 
-          <div style="flex: 1; overflow: hidden;">
-            <codespin-file-content-viewer style="height: 100%;"></codespin-file-content-viewer>
+            <div class="separator"></div>
+
+            <div class="content-container">
+              <codespin-file-content-viewer style="height: 100%;"></codespin-file-content-viewer>
+            </div>
           </div>
 
           <div

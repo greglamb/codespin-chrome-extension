@@ -131,7 +131,7 @@ export class FileContentViewer extends HTMLElement {
 
   render() {
     const vdom = (
-      <div style="height: 100%; background: #1e1e1e; color: #d4d4d4; border-radius: 4px;">
+      <div style="height: 100%; background: #1e1e1e; color: #d4d4d4; border-radius: 4px; padding-left: 16px; padding-top: 8px;">
         <style>
           {`
             @import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css');
