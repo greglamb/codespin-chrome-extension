@@ -80,68 +80,81 @@ export class FileImporter extends HTMLElement {
       <div
         style="
           position: fixed;
-          top: 100px;
-          left: 100px;
-          right: 100px;
-          bottom: 100px;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.75);
           display: flex;
-          gap: 16px;
-          background: #1e1e1e;
-          padding: 16px;
-          border-radius: 4px;
+          justify-content: center;
+          align-items: center;
         "
       >
-        <div style="flex: 0 0 300px; overflow: hidden;">
-          <codespin-file-tree
-            onselect={(e) => {
-              console.log("FileTree select event received");
-              this.handleFileSelect(e);
-            }}
-            oncancel={() => this.handleCancel()}
-          ></codespin-file-tree>
-        </div>
-
-        <div style="flex: 1; overflow: hidden;">
-          <codespin-file-content-viewer style="height: 100%;"></codespin-file-content-viewer>
-        </div>
-
         <div
           style="
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
+            position: relative;
+            width: calc(100% - 200px);
+            height: calc(100% - 200px);
             display: flex;
-            gap: 8px;
+            gap: 16px;
+            background: #1e1e1e;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
           "
         >
-          <button
-            onclick={() => this.handleCancel()}
+          <div style="flex: 0 0 300px; overflow: hidden;">
+            <codespin-file-tree
+              onselect={(e) => {
+                console.log("FileTree select event received");
+                this.handleFileSelect(e);
+              }}
+              oncancel={() => this.handleCancel()}
+            ></codespin-file-tree>
+          </div>
+
+          <div style="flex: 1; overflow: hidden;">
+            <codespin-file-content-viewer style="height: 100%;"></codespin-file-content-viewer>
+          </div>
+
+          <div
             style="
-              padding: 6px 12px;
-              background: #333;
-              border: none;
-              color: white;
-              border-radius: 4px;
-              cursor: pointer;
+              position: absolute;
+              bottom: 16px;
+              right: 16px;
+              display: flex;
+              gap: 8px;
             "
           >
-            Cancel
-          </button>
-          <button
-            onclick={() => this.handleSelect()}
-            disabled={selectedCount === 0}
-            style={`
-              padding: 6px 12px;
-              background: ${selectedCount === 0 ? "#555" : "#2b579a"};
-              border: none;
-              color: white;
-              border-radius: 4px;
-              cursor: ${selectedCount === 0 ? "not-allowed" : "pointer"};
-              opacity: ${selectedCount === 0 ? "0.7" : "1"};
-            `}
-          >
-            Select {selectedCount} file{selectedCount !== 1 ? "s" : ""}
-          </button>
+            <button
+              onclick={() => this.handleCancel()}
+              style="
+                padding: 6px 12px;
+                background: #333;
+                border: none;
+                color: white;
+                border-radius: 4px;
+                cursor: pointer;
+              "
+            >
+              Cancel
+            </button>
+            <button
+              onclick={() => this.handleSelect()}
+              disabled={selectedCount === 0}
+              style={`
+                padding: 6px 12px;
+                background: ${selectedCount === 0 ? "#555" : "#2b579a"};
+                border: none;
+                color: white;
+                border-radius: 4px;
+                cursor: ${selectedCount === 0 ? "not-allowed" : "pointer"};
+                opacity: ${selectedCount === 0 ? "0.7" : "1"};
+              `}
+            >
+              Select {selectedCount} file{selectedCount !== 1 ? "s" : ""}
+            </button>
+          </div>
         </div>
       </div>
     );
