@@ -1,9 +1,10 @@
 import { FileSystemNode } from "../../messageTypes.js";
 import { getFileContent } from "./files.js";
-import { filterIgnoredPaths } from "./gitIgnore.js";
+import { GitIgnoreHandler } from "./gitIgnore.js";
 
 export async function getDirContents(
   handle: FileSystemHandle,
+  gitIgnoreHandler: GitIgnoreHandler,
   path = ""
 ): Promise<FileSystemNode> {
   try {
@@ -19,25 +20,27 @@ export async function getDirContents(
       const dirHandle = handle as FileSystemDirectoryHandle;
       const contents: FileSystemNode[] = [];
 
-      const readFile = async (path: string): Promise<string | undefined> => {
-        try {
-          const result = await getFileContent(path);
-          if (result.success) {
-            return result.result.contents;
-          }
-          return undefined;
-        } catch (error) {
-          return undefined;
-        }
-      };
-
       try {
-        const entries = await Array.fromAsync(dirHandle.entries());
-        const filtered = await filterIgnoredPaths(entries, readFile);
-
-        for await (const [name, handle] of filtered) {
+        // Process entries one at a time instead of loading all at once
+        for await (const [name, entryHandle] of dirHandle.entries()) {
           const entryPath = path ? `${path}/${name}` : name;
-          contents.push(await getDirContents(handle, entryPath));
+
+          // Check if path should be ignored before processing
+          if (await gitIgnoreHandler.shouldIgnorePath(entryPath)) {
+            continue;
+          }
+
+          // If this is a directory and it contains a .gitignore file, update rules
+          if (entryHandle.kind === "directory") {
+            await gitIgnoreHandler.updateRulesForDirectory(
+              entryHandle,
+              entryPath
+            );
+          }
+
+          contents.push(
+            await getDirContents(entryHandle, gitIgnoreHandler, entryPath)
+          );
         }
       } catch (error) {
         console.warn(`Failed to read directory contents for ${path}: ${error}`);

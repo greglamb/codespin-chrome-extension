@@ -1,94 +1,89 @@
-type AsyncFileReader = (path: string) => Promise<string | undefined>;
-
 interface IgnoreRule {
   regex: RegExp;
   isNegated: boolean;
 }
 
-export async function filterIgnoredPaths(
-  entries: Array<[string, FileSystemHandle]>,
-  readFile: AsyncFileReader
-): Promise<[string, FileSystemHandle][]> {
-  // Convert gitignore pattern to regex
-  const patternToRegex = (pattern: string): RegExp => {
-    let regexPattern = pattern
-      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
-      .replace(/\\\*/g, ".*") // * matches any string
-      .replace(/\\\?/g, ".") // ? matches single char
-      .replace(/\//g, "\\/"); // Handle path separators
+export class GitIgnoreHandler {
+  private rules: Map<string, IgnoreRule[]> = new Map();
 
-    // If pattern doesn't start with /, it can match in any subdirectory
-    if (!pattern.startsWith("/")) {
-      regexPattern = `.*${regexPattern}`;
-    }
-
-    // If pattern ends with /, it matches directories
-    if (pattern.endsWith("/")) {
-      regexPattern = `${regexPattern}.*`;
-    }
-
-    return new RegExp(`^${regexPattern}$`);
-  };
-
-  // Get ignore rules from .gitignore-like files
-  const getIgnoreRules = (content: string): IgnoreRule[] => {
-    // Add implicit .git directory rule
-    const implicitRules = [
+  constructor() {
+    // Add implicit .git rule
+    this.rules.set("", [
       {
         regex: /^.*\.git(\/.*)?$/,
         isNegated: false,
       },
-    ];
+    ]);
+  }
 
-    // Parse and compile rules from content
-    const parsedRules = content
+  async updateRulesForDirectory(
+    dirHandle: FileSystemDirectoryHandle,
+    path: string
+  ) {
+    try {
+      const gitIgnoreHandle = await dirHandle.getFileHandle(".gitignore");
+      const file = await gitIgnoreHandle.getFile();
+      const content = await file.text();
+
+      this.rules.set(path, this.parseIgnoreRules(content));
+    } catch {
+      // No .gitignore file in this directory - that's fine
+    }
+  }
+
+  private parseIgnoreRules(content: string): IgnoreRule[] {
+    return content
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line && !line.startsWith("#"))
-      .map((pattern) => {
-        const isNegated = pattern.startsWith("!");
-        const cleanPattern = isNegated ? pattern.slice(1) : pattern;
-        return {
-          regex: patternToRegex(cleanPattern),
-          isNegated,
-        };
-      });
+      .map((pattern) => ({
+        regex: this.patternToRegex(pattern),
+        isNegated: pattern.startsWith("!"),
+      }));
+  }
 
-    return [...implicitRules, ...parsedRules];
-  };
+  private patternToRegex(pattern: string): RegExp {
+    let cleanPattern = pattern.startsWith("!") ? pattern.slice(1) : pattern;
 
-  // Check if path matches any ignore pattern
-  const isPathIgnored = (path: string, rules: IgnoreRule[]): boolean => {
-    let ignored = false;
-    for (const { regex, isNegated } of rules) {
-      if (regex.test(path)) {
-        ignored = !isNegated;
+    let regexPattern = cleanPattern
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/\\\*/g, ".*")
+      .replace(/\\\?/g, ".")
+      .replace(/\//g, "\\/");
+
+    if (!cleanPattern.startsWith("/")) {
+      regexPattern = `.*${regexPattern}`;
+    }
+
+    if (cleanPattern.endsWith("/")) {
+      regexPattern = `${regexPattern}.*`;
+    }
+
+    return new RegExp(`^${regexPattern}$`);
+  }
+
+  async shouldIgnorePath(path: string): Promise<boolean> {
+    // Check rules from all parent directories
+    const pathParts = path.split("/");
+    let currentPath = "";
+
+    for (let i = 0; i <= pathParts.length; i++) {
+      const rules = this.rules.get(currentPath);
+      if (rules) {
+        for (const { regex, isNegated } of rules) {
+          if (regex.test(path)) {
+            return !isNegated;
+          }
+        }
       }
-    }
-    return ignored;
-  };
-
-  try {
-    // Read and parse ignore patterns from .gitignore
-    const ignoreContent = await readFile(".gitignore");
-    const ignoreRules = ignoreContent
-      ? getIgnoreRules(ignoreContent)
-      : // If no .gitignore, still use implicit rules
-        [{ regex: /^.*\.git(\/.*)?$/, isNegated: false }];
-
-    // Convert async iterator to array and filter
-    const entriesArray: [string, FileSystemHandle][] = [];
-    for await (const entry of entries) {
-      entriesArray.push(entry);
+      currentPath =
+        i < pathParts.length
+          ? currentPath
+            ? `${currentPath}/${pathParts[i]}`
+            : pathParts[i]
+          : currentPath;
     }
 
-    return entriesArray.filter(([name]) => !isPathIgnored(name, ignoreRules));
-  } catch (error) {
-    // If .gitignore can't be read, still filter .git directory
-    const entriesArray: [string, FileSystemHandle][] = [];
-    for await (const entry of entries) {
-      entriesArray.push(entry);
-    }
-    return entriesArray.filter(([name]) => !/^.*\.git(\/.*)?$/.test(name));
+    return false;
   }
 }
