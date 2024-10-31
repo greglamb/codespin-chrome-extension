@@ -1,5 +1,4 @@
 import { FileSystemNode } from "../../messageTypes.js";
-import { getFileContent } from "./files.js";
 import { GitIgnoreHandler } from "./gitIgnore.js";
 
 export async function getDirContents(
