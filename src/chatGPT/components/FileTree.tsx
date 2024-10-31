@@ -1,6 +1,6 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
-import { getFiles } from "../../api/files.js";
+import { getFiles } from "../../api/fs/files.js";
 import { FileSystemNode } from "../../messageTypes.js";
 
 export class FileTreeSelector extends HTMLElement {

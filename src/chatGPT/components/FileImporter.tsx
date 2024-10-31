@@ -1,6 +1,6 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
-import { getFileContent } from "../../api/files.js";
+import { getFileContent } from "../../api/fs/files.js";
 import { FileContentViewer } from "./FileContentViewer.js";
 
 export class FileImporter extends HTMLElement {

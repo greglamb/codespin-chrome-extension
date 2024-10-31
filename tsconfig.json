@@ -2,9 +2,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "allowJs": false,
-    "target": "ES2021",
+    "target": "ESNext",
     "module": "NodeNext",
-    "lib": ["ES2021", "DOM"],
+    "lib": ["ESNext", "DOM"],
     "declaration": true,
     "sourceMap": true,
     "strict": true,
