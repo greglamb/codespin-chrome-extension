@@ -4,36 +4,29 @@ import { applyDiff } from "webjsx";
 export class InboundButton extends HTMLElement {
   constructor() {
     super();
+    this.attachShadow({ mode: "open" });
   }
 
   connectedCallback() {
     this.render();
-    this.querySelector("#codespin-inbound-button")?.addEventListener(
-      "click",
-      this.handleClick.bind(this)
-    );
-  }
-
-  disconnectedCallback() {
-    this.querySelector("#codespin-inbound-button")?.removeEventListener(
-      "click",
-      this.handleClick.bind(this)
-    );
+    this.shadowRoot!.querySelector(
+      "#codespin-inbound-button"
+    )?.addEventListener("click", this.handleClick.bind(this));
   }
 
   render() {
     const vdom = (
-      <button
-        class="flex items-center justify-center h-8 w-8 rounded-full text-token-text-primary dark:text-white focus-visible:outline-black dark:focus-visible:outline-white mb-1; padding: 0; margin: 0;"
+      <div
+        style="padding: 0; margin: 0; border: 0; background: transparent;"
         aria-disabled="false"
-        aria-label="CodeSpin Attach"
+        aria-label="Add Source Code"
         id="codespin-inbound-button"
       >
         <codespin-icon></codespin-icon>
-      </button>
+      </div>
     );
 
-    applyDiff(this, vdom);
+    applyDiff(this.shadowRoot!, vdom);
   }
 
   handleClick() {

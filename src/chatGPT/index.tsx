@@ -62,18 +62,10 @@ async function attachInboundButton() {
     );
 
     // Insert the custom element right after the button
-    attachFilesButton.insertAdjacentElement(
+    attachFilesButton.parentElement?.parentElement?.parentElement?.parentElement?.parentElement!.insertAdjacentElement(
       "afterend",
       inboundButton as InboundButton
     );
-
-    // Get the parent element of the attachFilesButton (which must be a span)
-    const parentElement = attachFilesButton.parentElement;
-
-    // Ensure the parent is a span and add the display: flex style
-    if (parentElement && parentElement.tagName.toLowerCase() === "span") {
-      parentElement.style.display = "flex";
-    }
   }
 }
 
