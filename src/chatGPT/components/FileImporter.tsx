@@ -125,7 +125,7 @@ export class FileImporter extends HTMLElement {
           selectedFiles.map(async (filePath) => {
             const fileContentsResponse = await getFileContent(filePath);
             return fileContentsResponse.success
-              ? `${fileContentsResponse.result.filename}\n\`\`\`\n${fileContentsResponse.result.contents}\`\`\`\n`
+              ? `${fileContentsResponse.result.path}\n\`\`\`\n${fileContentsResponse.result.contents}\`\`\`\n`
               : exception(`Failed to fetch ${filePath}`);
           })
         )
