@@ -1,7 +1,6 @@
 import "side-drawer";
 import * as webjsx from "webjsx";
 
-import "./components/Connection.js";
 import "./components/InboundButton.js";
 import "./components/ModalDialog.js";
 import "./components/ModalMessage.js";
