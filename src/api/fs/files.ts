@@ -33,12 +33,9 @@ export async function getFileContent(
     const dirHandle = await getDirectoryHandle();
 
     // Remove root directory name from path if it exists
-    let normalizedPath = path;
-    if (path.startsWith(rootDirectoryName + "/")) {
-      normalizedPath = path.slice(rootDirectoryName.length + 1);
-    } else if (path.startsWith(rootDirectoryName)) {
-      normalizedPath = path.slice(rootDirectoryName.length);
-    }
+    const normalizedPath = path.startsWith(rootDirectoryName + "/")
+      ? path.slice(rootDirectoryName.length + 1)
+      : path.slice(rootDirectoryName.length);
 
     const pathParts = normalizedPath.split("/").filter((p) => p.length > 0);
 
@@ -78,7 +75,7 @@ export async function getFileContent(
         result: {
           type: "file",
           filename: file.name,
-          path: path,
+          path: normalizedPath,
           contents: contents,
           size: file.size,
         },
@@ -100,19 +97,7 @@ export async function writeFileContent(
     const dirHandle = await getDirectoryHandle();
 
     // Handle paths starting with "./" or "."
-    let normalizedPath = path;
-    if (normalizedPath.startsWith("./")) {
-      normalizedPath = normalizedPath.slice(2);
-    } else if (normalizedPath === ".") {
-      normalizedPath = "";
-    }
-
-    // Then handle root directory name if it exists
-    if (normalizedPath.startsWith(rootDirectoryName + "/")) {
-      normalizedPath = normalizedPath.slice(rootDirectoryName.length + 1);
-    } else if (normalizedPath.startsWith(rootDirectoryName)) {
-      normalizedPath = normalizedPath.slice(rootDirectoryName.length);
-    }
+    const normalizedPath = path.startsWith("./") ? path.slice(2) : path;
 
     const pathParts = normalizedPath.split("/").filter((p) => p.length > 0);
 
