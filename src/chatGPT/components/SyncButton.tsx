@@ -1,5 +1,6 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
+import { writeFileContent } from "../../api/fs/files.js";
 
 export class SyncButton extends HTMLElement {
   constructor() {
@@ -45,16 +46,28 @@ export class SyncButton extends HTMLElement {
     const codeSpinElement = this.closest('[data-codespin-attached="true"]');
 
     if (codeSpinElement) {
-      // Get all previous siblings and convert to array to search from bottom up
+      // Get filepath
+      let filepath;
       let previousElement = codeSpinElement.previousElementSibling;
       while (previousElement) {
         const textContent = previousElement.textContent;
         if (textContent && textContent.startsWith("File:")) {
-          const path = textContent.replace("File:", "").trim();
-          console.log(path);
+          filepath = textContent.replace("File:", "").trim();
           break;
         }
         previousElement = previousElement.previousElementSibling;
+      }
+
+      // Get source code
+      const codeElement = codeSpinElement.querySelector("code");
+      const sourceCode = codeElement ? codeElement.innerText : "";
+
+      // Log both
+      console.log("File path:", filepath);
+      console.log("Source code:", sourceCode);
+
+      if (filepath?.startsWith("./")) {
+        writeFileContent(filepath, sourceCode);
       }
     }
   }

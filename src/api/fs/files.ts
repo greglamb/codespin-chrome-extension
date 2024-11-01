@@ -90,3 +90,70 @@ export async function getFileContent(
     throw error;
   }
 }
+
+export async function writeFileContent(
+  path: string,
+  content: string
+): Promise<ValidResult<void>> {
+  try {
+    const rootDirectoryName = getRootDirectoryName();
+    const dirHandle = await getDirectoryHandle();
+
+    // Handle paths starting with "./" or "."
+    let normalizedPath = path;
+    if (normalizedPath.startsWith("./")) {
+      normalizedPath = normalizedPath.slice(2);
+    } else if (normalizedPath === ".") {
+      normalizedPath = "";
+    }
+
+    // Then handle root directory name if it exists
+    if (normalizedPath.startsWith(rootDirectoryName + "/")) {
+      normalizedPath = normalizedPath.slice(rootDirectoryName.length + 1);
+    } else if (normalizedPath.startsWith(rootDirectoryName)) {
+      normalizedPath = normalizedPath.slice(rootDirectoryName.length);
+    }
+
+    const pathParts = normalizedPath.split("/").filter((p) => p.length > 0);
+
+    // Handle the case where we're writing to the root directory
+    if (pathParts.length === 0) {
+      throw new Error("Cannot write to directory path");
+    }
+
+    let currentHandle: FileSystemDirectoryHandle = dirHandle;
+
+    // Navigate through directories, creating them if they don't exist
+    for (const part of pathParts.slice(0, -1)) {
+      try {
+        currentHandle = await currentHandle.getDirectoryHandle(part, {
+          create: true,
+        });
+      } catch (error) {
+        throw new Error(`Failed to access or create directory: ${part}`);
+      }
+    }
+
+    const fileName = pathParts[pathParts.length - 1];
+    try {
+      // Get or create the file handle
+      const fileHandle = await currentHandle.getFileHandle(fileName, {
+        create: true,
+      });
+
+      // Create a writable stream and write the content
+      const writable = await fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+
+      return {
+        success: true,
+        result: undefined,
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to write file ${fileName}: ${error.message}`);
+    }
+  } catch (error: any) {
+    throw error;
+  }
+}

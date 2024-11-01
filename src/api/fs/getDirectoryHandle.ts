@@ -13,13 +13,17 @@ async function verifyDirectoryHandle(
   handle: FileSystemDirectoryHandle
 ): Promise<boolean> {
   try {
-    const permissionStatus = await handle.queryPermission({ mode: "read" });
+    // Updated to check for both read and write permissions
+    const permissionStatus = await handle.queryPermission({ mode: "readwrite" });
     if (permissionStatus === "granted") {
       const entriesIterator = handle.entries();
       await entriesIterator.next();
       return true;
     }
-    return false;
+    
+    // If not granted, try to request permission
+    const requestStatus = await handle.requestPermission({ mode: "readwrite" });
+    return requestStatus === "granted";
   } catch (error) {
     return false;
   }
@@ -40,13 +44,16 @@ export async function getDirectoryHandle(): Promise<FileSystemDirectoryHandle> {
   }
 
   try {
-    const dirHandle = await window.showDirectoryPicker();
+    // Updated to request directory with read/write access
+    const dirHandle = await window.showDirectoryPicker({
+      mode: "readwrite"
+    });
+    
     const isValid = await verifyDirectoryHandle(dirHandle);
-
     if (!isValid) {
       throw new Error("Failed to verify directory access");
     }
-
+    
     cachedDirectoryHandle = dirHandle;
     rootDirectoryName = dirHandle.name;
     return dirHandle;
