@@ -2,7 +2,6 @@ import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
 import { getFiles } from "../../api/fs/files.js";
 import { ConnectionInfo } from "../../messageTypes.js";
-import { Connection } from "./Connection.js";
 
 export class SyncButton extends HTMLElement {
   constructor() {
@@ -43,18 +42,7 @@ export class SyncButton extends HTMLElement {
     applyDiff(this, vdom); // Applying diff to the light DOM
   }
 
-  async handleClick() {
-    const filesResponse = await getFiles();
-  }
-
-  promptForConnection() {
-    return new Promise<ConnectionInfo | undefined>((resolve) => {
-      const connectionForm = webjsx.createNode(
-        <codespin-connection resolve={resolve} />
-      ) as Connection;
-      document.body.appendChild(connectionForm);
-    });
-  }
+  async handleClick() {}
 }
 
 // Register the custom element for use
