@@ -1,7 +1,5 @@
 import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
-import { getFiles } from "../../api/fs/files.js";
-import { ConnectionInfo } from "../../messageTypes.js";
 
 export class SyncButton extends HTMLElement {
   constructor() {
@@ -42,7 +40,24 @@ export class SyncButton extends HTMLElement {
     applyDiff(this, vdom); // Applying diff to the light DOM
   }
 
-  async handleClick() {}
+  async handleClick() {
+    // Find the parent element with data-codespin-attached attribute
+    const codeSpinElement = this.closest('[data-codespin-attached="true"]');
+
+    if (codeSpinElement) {
+      // Get all previous siblings and convert to array to search from bottom up
+      let previousElement = codeSpinElement.previousElementSibling;
+      while (previousElement) {
+        const textContent = previousElement.textContent;
+        if (textContent && textContent.startsWith("File:")) {
+          const path = textContent.replace("File:", "").trim();
+          console.log(path);
+          break;
+        }
+        previousElement = previousElement.previousElementSibling;
+      }
+    }
+  }
 }
 
 // Register the custom element for use

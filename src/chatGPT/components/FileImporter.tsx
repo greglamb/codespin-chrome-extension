@@ -115,6 +115,10 @@ export class FileImporter extends HTMLElement {
   async handleSelect() {
     const selectedFiles = Array.from(this.#selectedFiles);
 
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
     const prompt =
       (
         await Promise.all(
@@ -127,14 +131,14 @@ export class FileImporter extends HTMLElement {
         )
       ).join("\n\n") +
       `
-    Your response should always be formatted in the following way:
+    All the code you produce in this conversation should be formatted in the following way:
 
-    ./path/to/file1.txt
+    File: ./path/to/file1.txt
     \`\`\`
     file1.txt contents go here...
     \`\`\`
 
-    ./path/to/file2.txt
+    File: ./path/to/file2.txt
     \`\`\`
     file2.txt contents go here...
     \`\`\`    
