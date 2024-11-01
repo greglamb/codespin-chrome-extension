@@ -49,22 +49,24 @@ async function attachSyncButton() {
 
 // This needs to run only once because the textbox is created only once.
 async function attachInboundButton() {
-  const attachFilesButton = document.querySelector(
-    'button[aria-label="Attach files"]'
-  );
-
-  // Ensure the button is found before proceeding
-  if (attachFilesButton) {
-    // Create a new custom element
-    const inboundButton = webjsx.createNode(
-      <codespin-inbound-button></codespin-inbound-button>
+  if (!document.querySelector("codespin-inbound-button")) {
+    const attachFilesButton = document.querySelector(
+      'button[aria-label="Attach files"]'
     );
 
-    // Insert the custom element right after the button
-    attachFilesButton.parentElement?.parentElement?.parentElement?.parentElement?.parentElement!.insertAdjacentElement(
-      "afterend",
-      inboundButton as InboundButton
-    );
+    // Ensure the button is found before proceeding
+    if (attachFilesButton) {
+      // Create a new custom element
+      const inboundButton = webjsx.createNode(
+        <codespin-inbound-button></codespin-inbound-button>
+      );
+
+      // Insert the custom element right after the button
+      attachFilesButton.parentElement?.parentElement?.parentElement?.parentElement?.parentElement!.insertAdjacentElement(
+        "afterend",
+        inboundButton as InboundButton
+      );
+    }
   }
 }
 
@@ -82,5 +84,6 @@ export function initializeCodeSpin() {
   // Optionally, set up periodic checks (if necessary)
   setInterval(() => {
     attachSyncButton();
+    attachInboundButton();
   }, 3000);
 }

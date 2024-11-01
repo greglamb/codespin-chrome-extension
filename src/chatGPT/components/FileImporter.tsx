@@ -120,29 +120,33 @@ export class FileImporter extends HTMLElement {
     }
 
     const prompt =
+      "File contents below:\n======================\n" +
       (
         await Promise.all(
           selectedFiles.map(async (filePath) => {
             const fileContentsResponse = await getFileContent(filePath);
             return fileContentsResponse.success
-              ? `./${fileContentsResponse.result.path}\n\`\`\`\n${fileContentsResponse.result.contents}\`\`\`\n`
+              ? `File path: ./${fileContentsResponse.result.path}\n\`\`\`\n${fileContentsResponse.result.contents}\`\`\`\n`
               : exception(`Failed to fetch ${filePath}`);
           })
         )
       ).join("\n\n") +
       `
+    
+    \n======================\nEnd of file contents\n
+
     All the code you produce in this conversation should be formatted in the following way:
 
-    File: ./path/to/file1.txt
+    File path: ./path/to/file1.txt
     \`\`\`
     file1.txt contents go here...
     \`\`\`
 
-    File: ./path/to/file2.txt
+    File path: ./path/to/file2.txt
     \`\`\`
     file2.txt contents go here...
-    \`\`\`    
-    `;
+    \`\`\`
+    \n\n`;
 
     (document.querySelector("#prompt-textarea") as HTMLDivElement).innerText =
       prompt;

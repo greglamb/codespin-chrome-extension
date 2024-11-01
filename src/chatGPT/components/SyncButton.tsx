@@ -51,8 +51,8 @@ export class SyncButton extends HTMLElement {
       let previousElement = codeSpinElement.previousElementSibling;
       while (previousElement) {
         const textContent = previousElement.textContent;
-        if (textContent && textContent.startsWith("File:")) {
-          filepath = textContent.replace("File:", "").trim();
+        if (textContent && textContent.startsWith("File path:")) {
+          filepath = textContent.replace("File path:", "").trim();
           break;
         }
         previousElement = previousElement.previousElementSibling;
