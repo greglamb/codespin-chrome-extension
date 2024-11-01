@@ -45,11 +45,6 @@ export class SyncButton extends HTMLElement {
 
   async handleClick() {
     const filesResponse = await getFiles();
-
-    if (filesResponse?.success) {
-    } else {
-    }
-    console.log(filesResponse);
   }
 
   promptForConnection() {

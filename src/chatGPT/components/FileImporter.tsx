@@ -2,6 +2,7 @@ import * as webjsx from "webjsx";
 import { applyDiff } from "webjsx";
 import { getFileContent } from "../../api/fs/files.js";
 import { FileContentViewer } from "./FileContentViewer.js";
+import { exception } from "../../exception.js";
 
 export class FileImporter extends HTMLElement {
   #selectedFiles: Set<string> = new Set();
@@ -67,13 +68,8 @@ export class FileImporter extends HTMLElement {
 
   async handleFileSelect(e: CustomEvent) {
     const newSelection = e.detail;
-    console.log("FileImporter received new selection:", newSelection);
-
-    // Always create a new Set from the event detail
     this.#selectedFiles = new Set(newSelection);
-
     const selectedCount = this.#selectedFiles.size;
-    console.log("Updated selection count:", selectedCount);
 
     // Update content viewer based on selection
     const viewer = this.shadowRoot!.querySelector(
@@ -107,7 +103,6 @@ export class FileImporter extends HTMLElement {
       }
     }
 
-    // Force a render
     requestAnimationFrame(() => {
       this.render();
     });
@@ -117,14 +112,42 @@ export class FileImporter extends HTMLElement {
     this.dispatchEvent(new Event("cancel"));
   }
 
-  handleSelect() {
-    const detail = Array.from(this.#selectedFiles);
-    this.dispatchEvent(new CustomEvent("select", { detail }));
+  async handleSelect() {
+    const selectedFiles = Array.from(this.#selectedFiles);
+
+    const prompt =
+      (
+        await Promise.all(
+          selectedFiles.map(async (filePath) => {
+            const fileContentsResponse = await getFileContent(filePath);
+            return fileContentsResponse.success
+              ? `${fileContentsResponse.result.filename}\n\`\`\`\n${fileContentsResponse.result.contents}\`\`\`\n`
+              : exception(`Failed to fetch ${filePath}`);
+          })
+        )
+      ).join("\n\n") +
+      `
+    Your response should always be formatted in the following way:
+
+    ./path/to/file1.txt
+    \`\`\`
+    file1.txt contents go here...
+    \`\`\`
+
+    ./path/to/file2.txt
+    \`\`\`
+    file2.txt contents go here...
+    \`\`\`    
+    `;
+
+    (document.querySelector("#prompt-textarea") as HTMLDivElement).innerText =
+      prompt;
+
+    this.dispatchEvent(new CustomEvent("select", { detail: selectedFiles }));
   }
 
   render() {
     const selectedCount = this.#selectedFiles.size;
-    console.log("FileImporter rendering with count:", selectedCount);
 
     const styles = `
       .file-tree-container {
@@ -217,7 +240,6 @@ export class FileImporter extends HTMLElement {
             <div class="file-tree-container">
               <codespin-file-tree
                 onselect={(e) => {
-                  console.log("FileTree select event received");
                   this.handleFileSelect(e);
                 }}
                 oncancel={() => this.handleCancel()}

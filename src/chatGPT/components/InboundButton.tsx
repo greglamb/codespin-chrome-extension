@@ -43,7 +43,6 @@ export class InboundButton extends HTMLElement {
       >
         <codespin-file-importer
           onselect={(e: CustomEvent<string[]>) => {
-            console.log("Selected files:", e.detail);
             dialog.remove();
           }}
           oncancel={() => {

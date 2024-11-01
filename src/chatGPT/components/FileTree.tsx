@@ -76,7 +76,6 @@ export class FileTreeSelector extends HTMLElement {
         newSelection.length !== prevArray.length ||
         !newSelection.every((file) => prevSelection.has(file))
       ) {
-        console.log("Selection changed:", newSelection);
         this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
       }
     }
