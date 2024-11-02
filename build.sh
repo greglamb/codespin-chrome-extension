@@ -8,14 +8,14 @@ rm -rf dist
 mkdir -p dist
 
 echo "📦 Compiling each TypeScript file to JavaScript..."
-tsc --jsx react
+npx tsc
 
 echo "📝 Copying CSS files..."
-# Copy CSS files directly to the dist directory
-find src -name "*.css" -exec cp --parents {} dist \;
+# Copy CSS files, preserving directory structure within dist
+rsync -av --include='*/' --include='*.css' --exclude='*' src/ dist/
 
 echo "📝 Copying JS files..."
-# Copy JS files directly to the dist directory
-find src -name "*.js" -exec cp --parents {} dist \;
+# Copy JS files, preserving directory structure within dist
+rsync -av --include='*/' --include='*.js' --exclude='*' src/ dist/
 
-echo "✅ Build complete! Individual .js files are in the dist directory."
+echo "✅ Build complete! Individual .js and .css files are in the dist directory with original structure."

@@ -7,7 +7,7 @@
   "content_scripts": [
     {
       "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
-      "js": ["dist/index.ts"],
+      "js": ["dist/index.js"],
       "type": "module"
     }
   ],
