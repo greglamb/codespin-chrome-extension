@@ -74,7 +74,7 @@ export class ChangeTree extends HTMLElement {
       const fileNode: FileNode = {
         type: "file",
         name: fileName,
-        path: file.path,
+        path: file.path, // Keep original path for content lookup
       };
 
       const parentPath = parts.slice(0, -1).join("/");
@@ -150,17 +150,17 @@ export class ChangeTree extends HTMLElement {
   handleSelect(e: MouseEvent, path: string, node: FileNode) {
     e.stopPropagation();
 
-    if (node.type === "file") {
+    if (node.type === "file" && node.path) {
       const prevSelection = new Set(this.#selectedFiles);
 
       if (!e.ctrlKey && !e.metaKey) {
         this.#selectedFiles.clear();
-        this.#selectedFiles.add(path);
+        this.#selectedFiles.add(node.path);
       } else {
-        if (this.#selectedFiles.has(path)) {
-          this.#selectedFiles.delete(path);
+        if (this.#selectedFiles.has(node.path)) {
+          this.#selectedFiles.delete(node.path);
         } else {
-          this.#selectedFiles.add(path);
+          this.#selectedFiles.add(node.path);
         }
       }
 
@@ -171,7 +171,11 @@ export class ChangeTree extends HTMLElement {
         newSelection.length !== prevArray.length ||
         !newSelection.every((file) => prevSelection.has(file))
       ) {
-        this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
+        this.dispatchEvent(
+          new CustomEvent("select", {
+            detail: newSelection,
+          })
+        );
       }
     }
 
@@ -181,13 +185,14 @@ export class ChangeTree extends HTMLElement {
   renderNode(node: FileNode, path: string, isRoot: boolean = false) {
     const fullPath = path ? `${path}/${node.name}` : node.name;
     const isExpanded = isRoot || this.#expandedNodes.has(fullPath);
-    const isSelected = node.path && this.#selectedFiles.has(node.path);
+    const isSelected =
+      node.type === "file" && node.path && this.#selectedFiles.has(node.path);
 
     if (node.type === "file") {
       return (
         <div
           class={`file-item ${isSelected ? "selected" : ""}`}
-          onclick={(e) => this.handleSelect(e, node.path!, node)}
+          onclick={(e) => this.handleSelect(e, fullPath, node)}
         >
           <span>📄</span>
           <span>{node.name}</span>
