@@ -1,10 +1,8 @@
+import { getCSS } from "../../api/loadCSS.js";
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 
-const styleSheet = new CSSStyleSheet();
-const cssPath = new URL("./InboundButton.css", import.meta.url).href;
-const css = await fetch(cssPath).then((r) => r.text());
-styleSheet.replaceSync(css);
+const styleSheet = await getCSS("./InboundButton.css", import.meta.url);
 
 export class InboundButton extends HTMLElement {
   constructor() {

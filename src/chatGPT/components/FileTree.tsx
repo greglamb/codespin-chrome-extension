@@ -2,11 +2,9 @@ import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 import { getFiles } from "../../api/fs/files.js";
 import { FileSystemNode } from "../../messageTypes.js";
+import { getCSS } from "../../api/loadCSS.js";
 
-const styleSheet = new CSSStyleSheet();
-const cssPath = new URL("./FileTree.css", import.meta.url).href;
-const css = await fetch(cssPath).then((r) => r.text());
-styleSheet.replaceSync(css);
+const styleSheet = await getCSS("./FileTree.css", import.meta.url);
 
 export class FileTreeSelector extends HTMLElement {
   #expandedNodes: Set<string> = new Set();

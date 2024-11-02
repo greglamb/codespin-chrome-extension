@@ -1,12 +1,9 @@
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 import hljs from "../../libs/highlight.js/core.js";
+import { getCSS } from "../../api/loadCSS.js";
 
-const styleSheet = new CSSStyleSheet();
-
-const cssPath = new URL("./FileContentViewer.css", import.meta.url).href;
-const css = await fetch(cssPath).then((r) => r.text());
-styleSheet.replaceSync(css);
+const styleSheet = await getCSS("./FileContentViewer.css", import.meta.url);
 
 export class FileContentViewer extends HTMLElement {
   #content: string = "";

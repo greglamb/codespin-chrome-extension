@@ -1,11 +1,9 @@
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 import { writeFileContent } from "../../api/fs/files.js";
+import { getCSS } from "../../api/loadCSS.js";
 
-const styleSheet = new CSSStyleSheet();
-const cssPath = new URL("./SyncButton.css", import.meta.url).href;
-const css = await fetch(cssPath).then((r) => r.text());
-styleSheet.replaceSync(css);
+const styleSheet = await getCSS("./SyncButton.css", import.meta.url);
 
 export class SyncButton extends HTMLElement {
   constructor() {

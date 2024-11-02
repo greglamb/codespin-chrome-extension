@@ -3,12 +3,9 @@ import { applyDiff } from "../../libs/webjsx/index.js";
 import { getFileContent } from "../../api/fs/files.js";
 import { FileContentViewer } from "./FileContentViewer.js";
 import { exception } from "../../exception.js";
+import { getCSS } from "../../api/loadCSS.js";
 
-const styleSheet = new CSSStyleSheet();
-
-const cssPath = new URL("./FileImporter.css", import.meta.url).href;
-const css = await fetch(cssPath).then((r) => r.text());
-styleSheet.replaceSync(css);
+const styleSheet = await getCSS("./FileImporter.css", import.meta.url);
 
 export class FileImporter extends HTMLElement {
   #selectedFiles: Set<string> = new Set();
