@@ -1,6 +1,5 @@
 import "webjsx";
 import { VNode } from "webjsx";
-import { ConnectionInfo } from "../messageTypes.js";
 
 declare module "webjsx" {
   namespace JSX {
@@ -10,9 +9,6 @@ declare module "webjsx" {
       "codespin-sync-button": {};
       "codespin-inbound-button": {};
       "codespin-sync-form": {};
-      "codespin-connection": {
-        resolve?: (info: ConnectionInfo | undefined) => void;
-      };
       "codespin-modal-dialog": {
         ref?: (el: HTMLElement) => void;
         resolve?: () => void;

@@ -10,23 +10,11 @@ export type ErrorResult<TError> = {
 };
 export type Result<T, TError = string> = ValidResult<T> | ErrorResult<TError>;
 
-// Message types
-export const CODESPIN_SAVE_CONNECTION = "CODESPIN_SAVE_CONNECTION";
-export const CODESPIN_GET_FILES = "CODESPIN_GET_FILES";
-export const CODESPIN_GET_FILE_CONTENT = "CODESPIN_GET_FILE_CONTENT";
-
-// Error codes
-export const UNAUTHORIZED = "UNAUTHORIZED";
-export const MISSING_KEY = "MISSING_KEY";
-export const UNKNOWN = "UNKNOWN";
-export const FAILED_TO_CONNECT = "FAILED_TO_CONNECT";
 
 // Data Types
 export type FileSystemNode =
   | { type: "file"; name: string; length: number }
   | { type: "dir"; name: string; contents: FileSystemNode[] };
-
-export type ConnectionInfo = { port: string; key: string };
 
 export type FileContent = {
   type: "file";
