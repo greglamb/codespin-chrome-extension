@@ -26,6 +26,22 @@ export class ChangeTree extends HTMLElement {
     return path.replace(/^\.?\//, "");
   }
 
+  // Helper method to collect all directory paths
+  #collectDirectoryPaths(node: FileNode, currentPath: string = ""): string[] {
+    const paths: string[] = [];
+    const fullPath = currentPath ? `${currentPath}/${node.name}` : node.name;
+
+    if (node.type === "directory") {
+      paths.push(fullPath);
+      if (node.contents) {
+        node.contents.forEach((child) => {
+          paths.push(...this.#collectDirectoryPaths(child, fullPath));
+        });
+      }
+    }
+    return paths;
+  }
+
   #buildFileTree(files: { path: string; content: string }[]): FileNode {
     const dirMap: { [key: string]: FileNode } = {};
 
@@ -113,16 +129,10 @@ export class ChangeTree extends HTMLElement {
     this.#files = [rootNode];
     this.#selectedFiles = new Set([initialSelected]);
 
-    // Expand directories to show selected file
-    const selectedPath = this.#normalizePath(initialSelected);
-    const parts = selectedPath.split("/");
-    let currentPath = "";
-    parts.forEach((part, index) => {
-      if (index < parts.length - 1) {
-        currentPath += (currentPath ? "/" : "") + part;
-        this.#expandedNodes.add(currentPath);
-      }
-    });
+    // Expand all directories by default
+    this.#expandedNodes.clear();
+    const allDirectoryPaths = this.#collectDirectoryPaths(rootNode);
+    allDirectoryPaths.forEach((path) => this.#expandedNodes.add(path));
 
     this.render();
   }

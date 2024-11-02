@@ -67,7 +67,7 @@
 }
 
 .dir-contents:not(.root) {
-  --indent: 8px;
+  --indent: 0px;
   margin-left: var(--indent);
 }
 
