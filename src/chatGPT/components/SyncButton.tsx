@@ -33,7 +33,7 @@ export class SyncButton extends HTMLElement {
         <span>
           <button class="sync-button" id="sync-button">
             <codespin-sync-icon></codespin-sync-icon>
-            CodeSpin
+            Code Sync
           </button>
         </span>
       </div>
