@@ -1,5 +1,5 @@
-import * as webjsx from "../../../libs/webjsx/index.js";
-import { applyDiff } from "../../../libs/webjsx/index.js";
+import * as webjsx from "../../libs/webjsx/index.js";
+import { applyDiff } from "../../libs/webjsx/index.js";
 
 export class CodeSpinIcon extends HTMLElement {
   constructor() {

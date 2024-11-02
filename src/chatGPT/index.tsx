@@ -1,17 +1,17 @@
 import * as webjsx from "../libs/webjsx/index.js";
 
-import "./components/InboundButton.js";
-import "./components/SyncButton.js";
-import "./components/FileImporter.js";
-import "./components/FileTree.js";
-import "./components/FileContentViewer.js";
-import "./components/icons/CodeSpinIcon.js";
-import "./components/icons/SyncIcon.js";
-import "./components/FileWriter.js";
-import "./components/ChangeTree.js";
-import "./components/FileEdits.js";
+import "../components/InboundButton.js";
+import "../components/SyncButton.js";
+import "../components/FileImporter.js";
+import "../components/FileTree.js";
+import "../components/FileContentViewer.js";
+import "../components/icons/CodeSpinIcon.js";
+import "../components/icons/SyncIcon.js";
+import "../components/FileWriter.js";
+import "../components/ChangeTree.js";
+import "../components/FileEdits.js";
 
-import { InboundButton } from "./components/InboundButton.js";
+import { InboundButton } from "../components/InboundButton.js";
 
 /**
  * Attaches a sync button (<codespin-sync-button>) to a specific <pre> element.

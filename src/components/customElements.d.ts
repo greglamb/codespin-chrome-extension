@@ -1,9 +1,9 @@
 import "../libs/webjsx/index.js";
 import { VNode } from "../libs/webjsx/index.js";
-import { FileContentViewer } from "./components/FileContentViewer.js";
-import { FileEdits } from "./components/FileEdits.js";
-import { FileWriter } from "./components/FileWriter.js";
-import { ChangeTree } from "./components/ChangeTree.js";
+import { FileContentViewer } from "./FileContentViewer.js";
+import { FileEdits } from "./FileEdits.js";
+import { FileWriter } from "./FileWriter.js";
+import { ChangeTree } from "./ChangeTree.js";
 
 declare module "../libs/webjsx/index.js" {
   namespace JSX {

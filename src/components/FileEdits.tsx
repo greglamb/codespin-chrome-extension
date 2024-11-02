@@ -1,9 +1,9 @@
-import * as webjsx from "../../libs/webjsx/index.js";
-import { applyDiff } from "../../libs/webjsx/index.js";
-import hljs from "../../libs/highlight.js/core.js";
-import { getCSS } from "../../api/loadCSS.js";
-import { getFileContent } from "../../api/fs/files.js";
-import { createTwoFilesPatch } from "../../libs/diff/index.js";
+import * as webjsx from "../libs/webjsx/index.js";
+import { applyDiff } from "../libs/webjsx/index.js";
+import hljs from "../libs/highlight.js/core.js";
+import { getCSS } from "../api/loadCSS.js";
+import { getFileContent } from "../api/fs/files.js";
+import { createTwoFilesPatch } from "../libs/diff/index.js";
 
 const styleSheet = await getCSS("./FileEdits.css", import.meta.url);
 

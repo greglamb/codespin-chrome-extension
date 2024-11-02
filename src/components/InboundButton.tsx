@@ -1,8 +1,8 @@
-import { getCSS } from "../../api/loadCSS.js";
-import * as webjsx from "../../libs/webjsx/index.js";
-import { applyDiff } from "../../libs/webjsx/index.js";
-import { getFileContent } from "../../api/fs/files.js";
-import { exception } from "../../exception.js";
+import { getCSS } from "../api/loadCSS.js";
+import * as webjsx from "../libs/webjsx/index.js";
+import { applyDiff } from "../libs/webjsx/index.js";
+import { getFileContent } from "../api/fs/files.js";
+import { exception } from "../exception.js";
 
 const styleSheet = await getCSS("./InboundButton.css", import.meta.url);
 

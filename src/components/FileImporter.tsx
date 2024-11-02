@@ -1,12 +1,12 @@
-import * as webjsx from "../../libs/webjsx/index.js";
-import { applyDiff } from "../../libs/webjsx/index.js";
+import * as webjsx from "../libs/webjsx/index.js";
+import { applyDiff } from "../libs/webjsx/index.js";
 import { FileContentViewer } from "./FileContentViewer.js";
-import { getFileContent } from "../../api/fs/files.js";
-import { getCSS } from "../../api/loadCSS.js";
+import { getFileContent } from "../api/fs/files.js";
+import { getCSS } from "../api/loadCSS.js";
 import {
   clearFileSystemCache,
   getDirectoryHandle,
-} from "../../api/fs/getDirectoryHandle.js";
+} from "../api/fs/getDirectoryHandle.js";
 
 const styleSheet = await getCSS("./FileImporter.css", import.meta.url);
 
