@@ -1,15 +1,14 @@
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
-import { getFileContent } from "../../api/fs/files.js";
 import { FileContentViewer } from "./FileContentViewer.js";
-import { exception } from "../../exception.js";
+import { getFileContent } from "../../api/fs/files.js";
 import { getCSS } from "../../api/loadCSS.js";
 
 const styleSheet = await getCSS("./FileImporter.css", import.meta.url);
 
 export class FileImporter extends HTMLElement {
   #selectedFiles: Set<string> = new Set();
-  #treeWidth: number = 300; // Default width
+  #treeWidth: number = 300;
   #isDragging: boolean = false;
   #dragStartX: number = 0;
   #dragStartWidth: number = 0;
@@ -115,42 +114,9 @@ export class FileImporter extends HTMLElement {
     this.dispatchEvent(new Event("cancel"));
   }
 
-  async handleSelect() {
+  handleSelect() {
     const selectedFiles = Array.from(this.#selectedFiles);
-
-    if (selectedFiles.length === 0) {
-      return;
-    }
-
-    const prompt =
-      "File contents below:\n======================\n" +
-      (
-        await Promise.all(
-          selectedFiles.map(async (filePath) => {
-            const fileContentsResponse = await getFileContent(filePath);
-            return fileContentsResponse.success
-              ? `File path: ./${fileContentsResponse.result.path}\n\`\`\`\n${fileContentsResponse.result.contents}\`\`\`\n`
-              : exception(`Failed to fetch ${filePath}`);
-          })
-        )
-      ).join("\n\n") +
-      `\n======================\nEnd of file contents\n
-
-    All the code you produce in this conversation should be formatted in the following way:
-
-    File path: ./path/to/file1.txt
-    \`\`\`
-    file1.txt contents go here...
-    \`\`\`
-
-    File path: ./path/to/file2.txt
-    \`\`\`
-    file2.txt contents go here...
-    \`\`\`
-    \n\n`;
-
-    (document.querySelector("#prompt-textarea") as HTMLDivElement).innerText =
-      prompt;
+    if (selectedFiles.length === 0) return;
 
     this.dispatchEvent(new CustomEvent("select", { detail: selectedFiles }));
   }
