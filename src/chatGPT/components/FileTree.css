@@ -64,6 +64,7 @@
 
 .dir-contents.root {
   --indent: 0px;
+  padding-bottom: 20px;
 }
 
 .dir-contents:not(.root) {
