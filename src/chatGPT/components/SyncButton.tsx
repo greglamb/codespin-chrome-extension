@@ -37,7 +37,6 @@ export class SyncButton extends HTMLElement {
 
   async initializeDialog() {
     if (this.#dialog) return;
-
     this.#dialog = webjsx.createNode(
       <dialog class="dialog">
         <codespin-file-writer
@@ -50,12 +49,10 @@ export class SyncButton extends HTMLElement {
         />
       </dialog>
     ) as HTMLDialogElement;
-
     document.body.appendChild(this.#dialog);
   }
 
   getClickedFilePath(): string | null {
-    // Get the file path associated with this sync button
     const codeSpinElement = (
       this.shadowRoot!.getRootNode() as ShadowRoot
     ).host.closest('[data-codespin-attached="true"]');
@@ -74,18 +71,16 @@ export class SyncButton extends HTMLElement {
   }
 
   collectSyncButtonFiles(): FileChange[] {
-    const changes: FileChange[] = [];
+    const changesMap = new Map<string, string>();
 
-    // Find all elements with codespin-attached
     const codeSpinElements = document.querySelectorAll(
       '[data-codespin-attached="true"]'
     );
 
     codeSpinElements.forEach((element) => {
-      let filepath;
+      let filepath: string | undefined;
       let previousElement = element.previousElementSibling;
 
-      // Find the filepath
       while (previousElement) {
         const textContent = previousElement.textContent;
         if (textContent && textContent.startsWith("File path:")) {
@@ -95,19 +90,16 @@ export class SyncButton extends HTMLElement {
         previousElement = previousElement.previousElementSibling;
       }
 
-      // Get source code
       const codeElement = element.querySelector("code");
       const sourceCode = codeElement ? codeElement.innerText : "";
 
       if (filepath?.startsWith("./")) {
-        changes.push({
-          path: filepath,
-          content: sourceCode,
-        });
+        changesMap.set(filepath, sourceCode); // Replace if the filepath exists
       }
     });
 
-    return changes;
+    // Convert the map to an array of FileChange objects
+    return Array.from(changesMap, ([path, content]) => ({ path, content }));
   }
 
   render() {
@@ -126,23 +118,19 @@ export class SyncButton extends HTMLElement {
 
   async handleClick() {
     await this.initializeDialog();
-
     if (this.#dialog) {
-      // Get the file path for this sync button
       const clickedFilePath = this.getClickedFilePath();
       if (!clickedFilePath) {
         console.warn("Could not determine file path for sync button");
         return;
       }
 
-      // Collect all sync button files
       const changes = this.collectSyncButtonFiles();
       if (changes.length === 0) {
         console.warn("No file changes detected");
         return;
       }
 
-      // Get the change viewer component and set the files
       const viewer = this.#dialog.querySelector("codespin-file-writer");
       if (viewer) {
         (viewer as any).setFiles(changes, clickedFilePath);
