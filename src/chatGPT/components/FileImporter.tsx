@@ -3,6 +3,10 @@ import { applyDiff } from "../../libs/webjsx/index.js";
 import { FileContentViewer } from "./FileContentViewer.js";
 import { getFileContent } from "../../api/fs/files.js";
 import { getCSS } from "../../api/loadCSS.js";
+import {
+  clearFileSystemCache,
+  getDirectoryHandle,
+} from "../../api/fs/getDirectoryHandle.js";
 
 const styleSheet = await getCSS("./FileImporter.css", import.meta.url);
 
@@ -106,6 +110,20 @@ export class FileImporter extends HTMLElement {
     }
   }
 
+  async handleDisconnect() {
+    clearFileSystemCache();
+    try {
+      await getDirectoryHandle();
+      // Refresh the file tree after new directory is selected
+      const fileTree = this.shadowRoot!.querySelector("codespin-file-tree");
+      if (fileTree) {
+        await (fileTree as any).fetchFiles();
+      }
+    } catch (error) {
+      this.handleCancel();
+    }
+  }
+
   handleCancel() {
     this.dispatchEvent(new Event("cancel"));
   }
@@ -168,6 +186,15 @@ export class FileImporter extends HTMLElement {
                 }}
               ></codespin-file-content-viewer>
             </div>
+          </div>
+
+          <div class="left-button-container">
+            <button
+              class="button button-disconnect"
+              onclick={() => this.handleDisconnect()}
+            >
+              Change Directory
+            </button>
           </div>
 
           <div class="button-container">

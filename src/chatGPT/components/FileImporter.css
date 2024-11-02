@@ -42,7 +42,7 @@
 }
 
 .separator::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   top: 0;
@@ -87,6 +87,12 @@ codespin-file-tree {
   gap: 8px;
 }
 
+.left-button-container {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+}
+
 .button {
   padding: 6px 12px;
   border: none;
@@ -103,6 +109,10 @@ codespin-file-tree {
   background: var(--select-bg, #2b579a);
   cursor: var(--select-cursor, pointer);
   opacity: var(--select-opacity, 1);
+}
+
+.button-disconnect {
+  background: #444;
 }
 
 .button-select:disabled {
