@@ -1,25 +1,29 @@
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
-
 import { writeFileContent } from "../../api/fs/files.js";
+
+const styleSheet = new CSSStyleSheet();
+const cssPath = new URL("./SyncButton.css", import.meta.url).href;
+const css = await fetch(cssPath).then((r) => r.text());
+styleSheet.replaceSync(css);
 
 export class SyncButton extends HTMLElement {
   constructor() {
     super();
+    this.attachShadow({ mode: "open" });
+    this.shadowRoot!.adoptedStyleSheets = [styleSheet];
   }
 
   connectedCallback() {
-    // Render the button and attach the event listener
     this.render();
-    this.querySelector("#sync-button")!.addEventListener(
+    this.shadowRoot!.querySelector("#sync-button")!.addEventListener(
       "click",
       this.handleClick.bind(this)
     );
   }
 
   disconnectedCallback() {
-    // Clean up the event listener when the element is removed
-    this.querySelector("#sync-button")!.removeEventListener(
+    this.shadowRoot!.querySelector("#sync-button")!.removeEventListener(
       "click",
       this.handleClick.bind(this)
     );
@@ -27,24 +31,24 @@ export class SyncButton extends HTMLElement {
 
   render() {
     const vdom = (
-      <div
-        class="flex items-center rounded bg-token-main-surface-secondary px-2 font-sans text-xs text-token-text-secondary"
-        style="margin-right: 4px"
-      >
+      <div class="sync-container">
         <span>
-          <button class="flex gap-1 items-center py-1" id="sync-button">
+          <button class="sync-button" id="sync-button">
             <codespin-sync-icon></codespin-sync-icon>
             CodeSpin
           </button>
         </span>
       </div>
     );
-    applyDiff(this, vdom); // Applying diff to the light DOM
+    applyDiff(this.shadowRoot!, vdom);
   }
 
   async handleClick() {
-    // Find the parent element with data-codespin-attached attribute
-    const codeSpinElement = this.closest('[data-codespin-attached="true"]');
+    // Need to use getRootNode().host to get out of shadow DOM
+    const hostElement = (this.shadowRoot!.getRootNode() as ShadowRoot).host;
+    const codeSpinElement = hostElement.closest(
+      '[data-codespin-attached="true"]'
+    );
 
     if (codeSpinElement) {
       // Get filepath
@@ -63,10 +67,6 @@ export class SyncButton extends HTMLElement {
       const codeElement = codeSpinElement.querySelector("code");
       const sourceCode = codeElement ? codeElement.innerText : "";
 
-      // Log both
-      console.log("File path:", filepath);
-      console.log("Source code:", sourceCode);
-
       if (filepath?.startsWith("./")) {
         writeFileContent(filepath, sourceCode);
       }
@@ -74,5 +74,4 @@ export class SyncButton extends HTMLElement {
   }
 }
 
-// Register the custom element for use
 customElements.define("codespin-sync-button", SyncButton);

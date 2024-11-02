@@ -1,0 +1,14 @@
+.inbound-button {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+
+.dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: 80vw;
+  max-height: 80vh;
+}

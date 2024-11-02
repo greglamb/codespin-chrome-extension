@@ -1,8 +1,6 @@
 import * as webjsx from "../libs/webjsx/index.js";
 
 import "./components/InboundButton.js";
-import "./components/ModalDialog.js";
-import "./components/ModalMessage.js";
 import "./components/SyncButton.js";
 import "./components/FileImporter.js";
 import "./components/FileTree.js";

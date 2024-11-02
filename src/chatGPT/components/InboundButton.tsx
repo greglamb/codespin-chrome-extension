@@ -1,10 +1,16 @@
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 
+const styleSheet = new CSSStyleSheet();
+const cssPath = new URL("./InboundButton.css", import.meta.url).href;
+const css = await fetch(cssPath).then((r) => r.text());
+styleSheet.replaceSync(css);
+
 export class InboundButton extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.shadowRoot!.adoptedStyleSheets = [styleSheet];
   }
 
   connectedCallback() {
@@ -17,7 +23,7 @@ export class InboundButton extends HTMLElement {
   render() {
     const vdom = (
       <div
-        style="padding: 0; margin: 0; border: 0; background: transparent;"
+        class="inbound-button"
         aria-disabled="false"
         aria-label="Add Source Code"
         id="codespin-inbound-button"
@@ -32,15 +38,7 @@ export class InboundButton extends HTMLElement {
   handleClick() {
     // Create a fresh dialog each time
     const dialog = webjsx.createNode(
-      <dialog
-        style="
-          border: none;
-          padding: 0;
-          background: transparent;
-          max-width: 80vw;
-          max-height: 80vh;
-        "
-      >
+      <dialog class="dialog">
         <codespin-file-importer
           onselect={(e: CustomEvent<string[]>) => {
             dialog.remove();

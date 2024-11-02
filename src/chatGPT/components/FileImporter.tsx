@@ -4,6 +4,12 @@ import { getFileContent } from "../../api/fs/files.js";
 import { FileContentViewer } from "./FileContentViewer.js";
 import { exception } from "../../exception.js";
 
+const styleSheet = new CSSStyleSheet();
+
+const cssPath = new URL("./FileImporter.css", import.meta.url).href;
+const css = await fetch(cssPath).then((r) => r.text());
+styleSheet.replaceSync(css);
+
 export class FileImporter extends HTMLElement {
   #selectedFiles: Set<string> = new Set();
   #treeWidth: number = 300; // Default width
@@ -14,6 +20,7 @@ export class FileImporter extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.shadowRoot!.adoptedStyleSheets = [styleSheet];
   }
 
   connectedCallback() {
@@ -71,7 +78,6 @@ export class FileImporter extends HTMLElement {
     this.#selectedFiles = new Set(newSelection);
     const selectedCount = this.#selectedFiles.size;
 
-    // Update content viewer based on selection
     const viewer = this.shadowRoot!.querySelector(
       "codespin-file-content-viewer"
     ) as FileContentViewer;
@@ -131,9 +137,7 @@ export class FileImporter extends HTMLElement {
           })
         )
       ).join("\n\n") +
-      `
-    
-    \n======================\nEnd of file contents\n
+      `\n======================\nEnd of file contents\n
 
     All the code you produce in this conversation should be formatted in the following way:
 
@@ -157,93 +161,28 @@ export class FileImporter extends HTMLElement {
   render() {
     const selectedCount = this.#selectedFiles.size;
 
-    const styles = `
-      .file-tree-container {
-        flex: 0 0 ${this.#treeWidth}px;
-        display: flex;
-        flex-direction: column;
-        min-width: 200px;
-        max-width: 800px;
-        height: 100%;
-      }
-      
-      .separator {
-        width: 8px;
-        margin: 0 -4px;
-        background: transparent;
-        position: relative;
-        cursor: col-resize;
-        z-index: 10;
-        flex: none;
-      }
-      
-      .separator::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #444;
-        transition: background 0.2s;
-      }
-      
-      .separator:hover::after,
-      .separator.dragging::after {
-        background: #666;
-      }
-      
-      codespin-file-tree {
-        height: 100%;
-        white-space: nowrap;
-        display: block;
-        width: 100%;
-        overflow-x: auto;
-        overflow-y: auto;
-      }
-      
-      .content-container {
-        flex: 1;
-        height: 100%;
-        overflow: hidden;
-        min-width: 0;
-      }
-
-      .main-container {
-        height: 100%;
-        display: flex;
-        gap: 0;
-      }
-    `;
+    (
+      this.shadowRoot!.querySelector(".file-tree-container") as HTMLElement
+    )?.style.setProperty("--tree-width", `${this.#treeWidth}px`);
+    (
+      this.shadowRoot!.querySelector(".button-select") as HTMLElement
+    )?.style.setProperty(
+      "--select-bg",
+      selectedCount === 0 ? "#555" : "#2b579a"
+    );
+    (
+      this.shadowRoot!.querySelector(".button-select") as HTMLElement
+    )?.style.setProperty(
+      "--select-cursor",
+      selectedCount === 0 ? "not-allowed" : "pointer"
+    );
+    (
+      this.shadowRoot!.querySelector(".button-select") as HTMLElement
+    )?.style.setProperty("--select-opacity", selectedCount === 0 ? "0.7" : "1");
 
     const vdom = (
-      <div
-        style="
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.75);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        "
-      >
-        <style>{styles}</style>
-        <div
-          style="
-            position: relative;
-            width: calc(100% - 200px);
-            height: calc(100% - 200px);
-            display: flex;
-            flex-direction: column;
-            background: #1e1e1e;
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-          "
-        >
+      <div class="modal-overlay">
+        <div class="modal-content">
           <div class="main-container">
             <div class="file-tree-container">
               <codespin-file-tree
@@ -257,44 +196,21 @@ export class FileImporter extends HTMLElement {
             <div class="separator"></div>
 
             <div class="content-container">
-              <codespin-file-content-viewer style="height: 100%;"></codespin-file-content-viewer>
+              <codespin-file-content-viewer class="viewer-container"></codespin-file-content-viewer>
             </div>
           </div>
 
-          <div
-            style="
-              position: absolute;
-              bottom: 16px;
-              right: 16px;
-              display: flex;
-              gap: 8px;
-            "
-          >
+          <div class="button-container">
             <button
+              class="button button-cancel"
               onclick={() => this.handleCancel()}
-              style="
-                padding: 6px 12px;
-                background: #333;
-                border: none;
-                color: white;
-                border-radius: 4px;
-                cursor: pointer;
-              "
             >
               Cancel
             </button>
             <button
+              class="button button-select"
               onclick={() => this.handleSelect()}
               disabled={selectedCount === 0}
-              style={`
-                padding: 6px 12px;
-                background: ${selectedCount === 0 ? "#555" : "#2b579a"};
-                border: none;
-                color: white;
-                border-radius: 4px;
-                cursor: ${selectedCount === 0 ? "not-allowed" : "pointer"};
-                opacity: ${selectedCount === 0 ? "0.7" : "1"};
-              `}
             >
               Select {selectedCount} file{selectedCount !== 1 ? "s" : ""}
             </button>

@@ -27,6 +27,7 @@ declare module "../libs/webjsx/index.js" {
       };
       "codespin-file-content-viewer": {
         style?: string;
+        class?: string
       };
     }
   }

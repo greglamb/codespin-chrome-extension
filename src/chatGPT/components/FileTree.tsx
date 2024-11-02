@@ -3,6 +3,11 @@ import { applyDiff } from "../../libs/webjsx/index.js";
 import { getFiles } from "../../api/fs/files.js";
 import { FileSystemNode } from "../../messageTypes.js";
 
+const styleSheet = new CSSStyleSheet();
+const cssPath = new URL("./FileTree.css", import.meta.url).href;
+const css = await fetch(cssPath).then((r) => r.text());
+styleSheet.replaceSync(css);
+
 export class FileTreeSelector extends HTMLElement {
   #expandedNodes: Set<string> = new Set();
   #selectedFiles: Set<string> = new Set();
@@ -13,6 +18,7 @@ export class FileTreeSelector extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.shadowRoot!.adoptedStyleSheets = [styleSheet];
   }
 
   async connectedCallback() {
@@ -92,26 +98,11 @@ export class FileTreeSelector extends HTMLElement {
       return (
         <div
           class={`file-item ${isSelected ? "selected" : ""}`}
-          style={`
-            padding: 4px 8px;
-            padding-left: 24px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            ${isSelected ? "background-color: #2b579a; color: white;" : ""}
-            position: relative;
-          `}
           onclick={(e) => this.handleSelect(e, fullPath, node)}
         >
           <span>📄</span>
           <span>{node.name}</span>
-          <span
-            style={`
-              color: ${isSelected ? "#ccc" : "#666"}; 
-              font-size: 0.8em;
-            `}
-          ></span>
+          <span class="file-meta"></span>
         </div>
       );
     }
@@ -119,16 +110,7 @@ export class FileTreeSelector extends HTMLElement {
     return (
       <div>
         <div
-          class="dir-item"
-          style={`
-            padding: 4px 8px;
-            padding-left: ${isRoot ? "8px" : "24px"};
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            user-select: none;
-          `}
+          class={`dir-item ${isRoot ? "root" : ""}`}
           onclick={(e) => !isRoot && this.handleDirClick(e, fullPath)}
         >
           {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
@@ -136,7 +118,7 @@ export class FileTreeSelector extends HTMLElement {
           <span>{isRoot ? "Project Files" : node.name}</span>
         </div>
         {isExpanded && node.contents && (
-          <div style={`margin-left: ${isRoot ? "0px" : "12px"};`}>
+          <div class={`dir-contents ${isRoot ? "root" : ""}`}>
             {node.contents.map((child) => this.renderNode(child, fullPath))}
           </div>
         )}
@@ -146,33 +128,9 @@ export class FileTreeSelector extends HTMLElement {
 
   render() {
     const vdom = (
-      <div style="height: 100%; background: #252526; border-radius: 4px; overflow-y: auto; font-size: 13px;">
-        <style>
-          {`
-            .file-item {
-              position: relative;
-              transition: background-color 0.1s ease;
-            }
-            .file-item:hover {
-              background-color: #2b579a44;
-            }
-            .file-item.selected {
-              background-color: #2b579a;
-              color: white;
-            }
-            .file-item.selected:hover {
-              background-color: #2b579add;
-            }
-            .dir-item:hover {
-              background-color: #2b579a22;
-            }
-          `}
-        </style>
-
-        {this.#loading && <div style="padding: 8px 24px;">Loading...</div>}
-        {this.#error && (
-          <div style="padding: 8px 24px; color: #f14c4c;">{this.#error}</div>
-        )}
+      <div class="tree-container">
+        {this.#loading && <div class="message">Loading...</div>}
+        {this.#error && <div class="error-message">{this.#error}</div>}
         {this.#files && this.renderNode(this.#files, "", true)}
       </div>
     );
