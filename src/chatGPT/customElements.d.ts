@@ -1,5 +1,9 @@
 import "../libs/webjsx/index.js";
 import { VNode } from "../libs/webjsx/index.js";
+import { FileContentViewer } from "./components/FileContentViewer.js";
+import { FileEdits } from "./components/FileEdits.js";
+import { FileWriter } from "./components/FileWriter.js";
+import { ChangeTree } from "./components/ChangeTree.js";
 
 declare module "../libs/webjsx/index.js" {
   namespace JSX {
@@ -28,7 +32,23 @@ declare module "../libs/webjsx/index.js" {
       "codespin-file-content-viewer": {
         style?: string;
         class?: string;
-        onfilechange?: Function;
+        showSelector?: boolean;
+        onfilechange?: (event: {
+          detail: string;
+          target: FileContentViewer;
+        }) => void;
+        onmount?: (event: CustomEvent) => void;
+      };
+      "codespin-file-edits": {
+        ref?: (el: FileEdits) => void;
+      };
+      "codespin-change-tree": {
+        ref?: (el: ChangeTree) => void;
+        onselect?: (event: CustomEvent<string[]>) => void;
+      };
+      "codespin-file-writer": {
+        onwritten?: (event: Event) => void;
+        oncancel?: (event: Event) => void;
       };
     }
   }

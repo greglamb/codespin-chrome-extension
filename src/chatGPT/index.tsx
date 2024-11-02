@@ -7,6 +7,9 @@ import "./components/FileTree.js";
 import "./components/FileContentViewer.js";
 import "./components/icons/CodeSpinIcon.js";
 import "./components/icons/SyncIcon.js";
+import "./components/FileWriter.js";
+import "./components/ChangeTree.js";
+import "./components/FileEdits.js";
 
 import { InboundButton } from "./components/InboundButton.js";
 

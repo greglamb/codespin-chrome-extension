@@ -1,0 +1,114 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  position: relative;
+  width: calc(100% - 200px);
+  height: calc(100% - 200px);
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.main-container {
+  height: 100%;
+  display: flex;
+  gap: 0;
+}
+
+.tree-container {
+  flex: 0 0 var(--tree-width);
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  max-width: 800px;
+  height: 100%;
+}
+
+.separator {
+  width: 8px;
+  margin: 0 -4px;
+  background: transparent;
+  position: relative;
+  cursor: col-resize;
+  z-index: 10;
+  flex: none;
+}
+
+.separator::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #444;
+  transition: background 0.2s;
+}
+
+.separator:hover::after,
+.separator.dragging::after {
+  background: #666;
+}
+
+.content-container {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.button-container {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.button {
+  padding: 6px 12px;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-cancel {
+  background: #333;
+}
+
+.button-cancel:hover {
+  background: #444;
+}
+
+.button-write {
+  background: #2b579a;
+}
+
+.button-write:hover {
+  background: #356abc;
+}
+
+.button-write:disabled {
+  background: #555;
+  cursor: not-allowed;
+  opacity: 0.7;
+}

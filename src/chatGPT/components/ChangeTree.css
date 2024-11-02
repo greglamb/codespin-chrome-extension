@@ -1,0 +1,55 @@
+.tree-container {
+  height: 100%;
+  background: #252526;
+  border-radius: 4px;
+  overflow-y: auto;
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+.file-item {
+  position: relative;
+  transition: background-color 0.1s ease;
+  padding: 4px 8px 4px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-item:hover {
+  background-color: #2b579a44;
+}
+
+.file-item.selected {
+  background-color: #2b579a;
+  color: white;
+}
+
+.file-item.selected:hover {
+  background-color: #2b579add;
+}
+
+.dir-item {
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dir-item:hover {
+  background-color: #2b579a22;
+}
+
+.dir-contents {
+  padding-left: 16px;
+}
+
+/* Icons */
+.dir-item span:first-child {
+  width: 12px;
+  text-align: center;
+}

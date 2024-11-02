@@ -20,4 +20,20 @@
   padding-bottom: 0.25rem;
   background: transparent;
   border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: 90vw;
+  max-height: 90vh;
+  margin: 0;
+}
+
+/* Remove default dialog backdrop since our component has its own overlay */
+.dialog::backdrop {
+  background: transparent;
 }
