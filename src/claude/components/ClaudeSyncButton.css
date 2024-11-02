@@ -1,0 +1,46 @@
+.sync-container {
+  display: flex;
+  align-items: center;
+  border-radius: 0.25rem;
+  background: var(--token-main-surface-secondary);
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  font-family: sans-serif;
+  font-size: 0.75rem;
+  color: var(--token-text-secondary);
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.sync-button {
+  align-items: center;
+  background: #2f2f2f;
+  border: 0;
+  border-radius: 4px;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Helvetica,
+    Apple Color Emoji, Arial, sans-serif, Segoe UI Emoji, Segoe UI Symbol;
+  font-size: 12px;
+  gap: 0.25rem;
+  margin-top: 0;
+  padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
+  padding: 4px 12px 5px 12px;
+  width: 100px;
+}
+
+.dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: 90vw;
+  max-height: 90vh;
+  margin: 0;
+}
+
+/* Remove default dialog backdrop since our component has its own overlay */
+.dialog::backdrop {
+  background: transparent;
+}

@@ -1,12 +1,12 @@
-import { getCSS } from "../api/loadCSS.js";
-import * as webjsx from "../libs/webjsx/index.js";
-import { applyDiff } from "../libs/webjsx/index.js";
-import { getFileContent } from "../api/fs/files.js";
-import { exception } from "../exception.js";
+import { getCSS } from "../../api/loadCSS.js";
+import * as webjsx from "../../libs/webjsx/index.js";
+import { applyDiff } from "../../libs/webjsx/index.js";
+import { getFileContent } from "../../api/fs/files.js";
+import { exception } from "../../exception.js";
 
-const styleSheet = await getCSS("./InboundButton.css", import.meta.url);
+const styleSheet = await getCSS("./ChatGPTInboundButton.css", import.meta.url);
 
-export class InboundButton extends HTMLElement {
+export class ChatGPTInboundButton extends HTMLElement {
   #dialog: HTMLDialogElement | null = null;
 
   constructor() {
@@ -18,7 +18,7 @@ export class InboundButton extends HTMLElement {
   connectedCallback() {
     this.render();
     this.shadowRoot!.querySelector(
-      "#codespin-inbound-button"
+      "#codespin-chatgpt-inbound-icon-wrapper"
     )?.addEventListener("click", this.handleClick.bind(this));
   }
 
@@ -64,18 +64,20 @@ export class InboundButton extends HTMLElement {
         ).join("\n\n") +
         `\n======================\nEnd of file contents\n
 
-    All the code you produce in this conversation should be formatted in the following way:
+          All the code you output in this conversation should be formatted in the following way:
 
-    File path: ./path/to/file1.txt
-    \`\`\`
-    file1.txt contents go here...
-    \`\`\`
+          File path: ./path/to/file1.txt
+          \`\`\`
+          file1.txt contents go here...
+          \`\`\`
 
-    File path: ./path/to/file2.txt
-    \`\`\`
-    file2.txt contents go here...
-    \`\`\`
-    \n\n`;
+          File path: ./path/to/file2.txt
+          \`\`\`
+          file2.txt contents go here...
+          \`\`\`
+
+          Note that you must always output the entire file whenever you're changing something.
+          \n\n`;
 
       (document.querySelector("#prompt-textarea") as HTMLDivElement).innerText =
         prompt;
@@ -90,7 +92,7 @@ export class InboundButton extends HTMLElement {
         class="inbound-button"
         aria-disabled="false"
         aria-label="Add Source Code"
-        id="codespin-inbound-button"
+        id="codespin-chatgpt-inbound-icon-wrapper"
       >
         <codespin-icon></codespin-icon>
       </div>
@@ -105,4 +107,4 @@ export class InboundButton extends HTMLElement {
   }
 }
 
-customElements.define("codespin-inbound-button", InboundButton);
+customElements.define("codespin-chatgpt-inbound-button", ChatGPTInboundButton);

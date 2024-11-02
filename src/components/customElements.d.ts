@@ -1,17 +1,14 @@
 import "../libs/webjsx/index.js";
 import { VNode } from "../libs/webjsx/index.js";
+import { ChangeTree } from "./ChangeTree.js";
 import { FileContentViewer } from "./FileContentViewer.js";
 import { FileEdits } from "./FileEdits.js";
-import { FileWriter } from "./FileWriter.js";
-import { ChangeTree } from "./ChangeTree.js";
 
 declare module "../libs/webjsx/index.js" {
   namespace JSX {
     interface IntrinsicElements {
       "codespin-sync-icon": {};
       "codespin-icon": {};
-      "codespin-sync-button": {};
-      "codespin-inbound-button": {};
       "codespin-modal-dialog": {
         ref?: (el: HTMLElement) => void;
         resolve?: () => void;

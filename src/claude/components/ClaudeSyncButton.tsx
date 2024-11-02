@@ -1,15 +1,15 @@
-import { getCSS } from "../api/loadCSS.js";
-import * as webjsx from "../libs/webjsx/index.js";
-import { applyDiff } from "../libs/webjsx/index.js";
+import { getCSS } from "../../api/loadCSS.js";
+import * as webjsx from "../../libs/webjsx/index.js";
+import { applyDiff } from "../../libs/webjsx/index.js";
 
-const styleSheet = await getCSS("./SyncButton.css", import.meta.url);
+const styleSheet = await getCSS("./ClaudeSyncButton.css", import.meta.url);
 
 interface FileChange {
   path: string;
   content: string;
 }
 
-export class SyncButton extends HTMLElement {
+export class ClaudeSyncButton extends HTMLElement {
   #dialog: HTMLDialogElement | null = null;
 
   constructor() {
@@ -94,11 +94,10 @@ export class SyncButton extends HTMLElement {
       const sourceCode = codeElement ? codeElement.innerText : "";
 
       if (filepath?.startsWith("./")) {
-        changesMap.set(filepath, sourceCode); // Replace if the filepath exists
+        changesMap.set(filepath, sourceCode);
       }
     });
 
-    // Convert the map to an array of FileChange objects
     return Array.from(changesMap, ([path, content]) => ({ path, content }));
   }
 
@@ -140,4 +139,4 @@ export class SyncButton extends HTMLElement {
   }
 }
 
-customElements.define("codespin-sync-button", SyncButton);
+customElements.define("codespin-claude-sync-button", ClaudeSyncButton);

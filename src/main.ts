@@ -1,6 +1,4 @@
-import * as chatGPT from "./chatGPT/index.js";
-
-function start() {
+async function start() {
   const app = getDomain();
 
   function getDomain(): "CHATGPT" | "CLAUDE" | undefined {
@@ -13,8 +11,14 @@ function start() {
   }
 
   if (app === "CHATGPT") {
+    const chatGPTModule = await import("./chatGPT/index.js");
     setTimeout(() => {
-      chatGPT.initializeCodeSpin();
+      chatGPTModule.initializeCodeSpin();
+    }, 1000);
+  } else if (app === "CLAUDE") {
+    const claudeModule = await import("./claude/index.js");
+    setTimeout(() => {
+      claudeModule.initializeCodeSpin();
     }, 1000);
   } else {
     throw new Error("Only ChatGPT is supported now.");
@@ -22,10 +26,12 @@ function start() {
 }
 
 function onAppLoad() {
-  start();
+  start().catch((error) => {
+    console.error("Error during startup:", error);
+  });
 }
+
 if (document.readyState === "loading") {
-  // The DOM is still loading, you can attach the DOMContentLoaded event listener
   document.addEventListener("DOMContentLoaded", function () {
     onAppLoad();
   });

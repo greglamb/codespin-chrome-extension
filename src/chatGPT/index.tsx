@@ -1,7 +1,7 @@
 import * as webjsx from "../libs/webjsx/index.js";
 
-import "../components/InboundButton.js";
-import "../components/SyncButton.js";
+import "./components/ChatGPTInboundButton.js";
+import "./components/ChatGPTSyncButton.js";
 import "../components/FileImporter.js";
 import "../components/FileTree.js";
 import "../components/FileContentViewer.js";
@@ -11,10 +11,8 @@ import "../components/FileWriter.js";
 import "../components/ChangeTree.js";
 import "../components/FileEdits.js";
 
-import { InboundButton } from "../components/InboundButton.js";
-
 /**
- * Attaches a sync button (<codespin-sync-button>) to a specific <pre> element.
+ * Attaches a sync button (<codespin-chatgpt-sync-button>) to a specific <pre> element.
  * @param preElement The <pre> element to which the sync button will be attached.
  */
 function addSyncButtonToDOM(preElement: HTMLElement) {
@@ -23,7 +21,7 @@ function addSyncButtonToDOM(preElement: HTMLElement) {
   )?.parentElement?.parentElement;
 
   if (copyButtonContainer) {
-    const syncButton = webjsx.createNode(<codespin-sync-button />);
+    const syncButton = webjsx.createNode(<codespin-chatgpt-sync-button />);
     copyButtonContainer.parentElement?.insertBefore(
       syncButton,
       copyButtonContainer
@@ -48,7 +46,7 @@ async function attachSyncButton() {
 
 // This needs to run only once because the textbox is created only once.
 async function attachInboundButton() {
-  if (!document.querySelector("codespin-inbound-button")) {
+  if (!document.querySelector("codespin-chatgpt-inbound-button")) {
     const attachFilesButton = document.querySelector(
       'button[aria-label="Attach files"]'
     );
@@ -57,13 +55,13 @@ async function attachInboundButton() {
     if (attachFilesButton) {
       // Create a new custom element
       const inboundButton = webjsx.createNode(
-        <codespin-inbound-button></codespin-inbound-button>
+        <codespin-chatgpt-inbound-button></codespin-chatgpt-inbound-button>
       );
 
       // Insert the custom element right after the button
       attachFilesButton.parentElement?.parentElement?.parentElement?.parentElement?.parentElement!.insertAdjacentElement(
         "afterend",
-        inboundButton as InboundButton
+        inboundButton as Element
       );
     }
   }
