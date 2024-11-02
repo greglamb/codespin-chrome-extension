@@ -1,6 +1,6 @@
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
-import hljs from "../../libs/highlight.js/index.js";
+import hljs from "../../libs/highlight.js/core.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(

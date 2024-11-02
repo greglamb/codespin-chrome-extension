@@ -63,11 +63,24 @@ else
   TYPES_ENTRY=""
 fi
 
-# Bundle with esbuild and disable file path comments
+# Bundle with esbuild, converting to ESM if required
 if $ESM; then
-  esbuild "$TEMP_DIR/node_modules/$PACKAGE_NAME" --bundle --format=esm --outfile=$OUTPUT_FILE --legal-comments=none
+  esbuild "$TEMP_DIR/node_modules/$PACKAGE_NAME" \
+    --bundle \
+    --format=esm \
+    --outfile=$OUTPUT_FILE \
+    --legal-comments=none \
+    --platform=browser \
+    --target=esnext
+  echo "Bundled as ESM format."
 else
-  esbuild "$TEMP_DIR/node_modules/$PACKAGE_NAME" --bundle --format=iife --global-name="${PACKAGE_NAME}" --outfile=$OUTPUT_FILE --legal-comments=none
+  esbuild "$TEMP_DIR/node_modules/$PACKAGE_NAME" \
+    --bundle \
+    --format=iife \
+    --global-name="${PACKAGE_NAME}" \
+    --outfile=$OUTPUT_FILE \
+    --legal-comments=none \
+    --platform=browser
 fi
 
 # If --ts is set, handle TypeScript declarations
