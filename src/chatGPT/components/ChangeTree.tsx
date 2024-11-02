@@ -22,70 +22,97 @@ export class ChangeTree extends HTMLElement {
     this.shadowRoot!.adoptedStyleSheets = [styleSheet];
   }
 
+  #normalizePath(path: string): string {
+    return path.replace(/^\.?\//, "");
+  }
+
   #buildFileTree(files: { path: string; content: string }[]): FileNode[] {
-    const root: { [key: string]: FileNode } = {};
+    // Create a root directory map
+    const dirMap: { [key: string]: FileNode } = {};
 
-    // Sort files by path to ensure parent directories are processed first
-    const sortedFiles = [...files].sort((a, b) => a.path.localeCompare(b.path));
+    // Process each file
+    files.forEach((file) => {
+      const normalizedPath = this.#normalizePath(file.path);
+      const parts = normalizedPath.split("/");
 
-    sortedFiles.forEach((file) => {
-      const parts = file.path.split("/");
-      let current = root;
-
-      // Process directories
+      // Create directories for each part of the path
+      let currentPath = "";
       for (let i = 0; i < parts.length - 1; i++) {
         const part = parts[i];
-        if (!current[part]) {
-          current[part] = {
+        currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+        if (!dirMap[currentPath]) {
+          dirMap[currentPath] = {
             type: "directory",
             name: part,
             contents: [],
           };
         }
-        current = (current[part].contents as FileNode[]).reduce((acc, node) => {
-          acc[node.name] = node;
-          return acc;
-        }, {} as { [key: string]: FileNode });
       }
 
-      // Add file
+      // Create file node
       const fileName = parts[parts.length - 1];
-      const parentNode = current;
-      parentNode[fileName] = {
+      const fileNode: FileNode = {
         type: "file",
         name: fileName,
         path: file.path,
       };
+
+      // Add file to its parent directory
+      const parentPath = parts.slice(0, -1).join("/");
+      if (parentPath) {
+        dirMap[parentPath].contents!.push(fileNode);
+      }
     });
 
-    // Convert the object tree to array structure
-    const convertToArray = (obj: { [key: string]: FileNode }): FileNode[] => {
-      return Object.values(obj).map((node) => ({
-        ...node,
-        contents: node.contents
-          ? node.contents.sort((a, b) => {
-              // Directories first, then alphabetically
-              if (a.type !== b.type) {
-                return a.type === "directory" ? -1 : 1;
-              }
-              return a.name.localeCompare(b.name);
-            })
-          : undefined,
-      }));
+    // Build the tree structure
+    const rootNodes: FileNode[] = [];
+    Object.entries(dirMap).forEach(([path, node]) => {
+      const parts = path.split("/");
+      if (parts.length === 1) {
+        // This is a root level directory
+        rootNodes.push(node);
+      } else {
+        // This is a nested directory, add it to its parent
+        const parentPath = parts.slice(0, -1).join("/");
+        if (dirMap[parentPath]) {
+          dirMap[parentPath].contents!.push(node);
+        }
+      }
+    });
+
+    // Sort contents of all directories
+    const sortNodes = (nodes: FileNode[]) => {
+      nodes.sort((a, b) => {
+        if (a.type !== b.type) {
+          return a.type === "directory" ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      nodes.forEach((node) => {
+        if (node.type === "directory" && node.contents) {
+          sortNodes(node.contents);
+        }
+      });
     };
 
-    return convertToArray(root);
+    sortNodes(rootNodes);
+    console.log("Built tree:", JSON.stringify(rootNodes, null, 2));
+    return rootNodes;
   }
 
   setFiles(
     files: { path: string; content: string }[],
     initialSelected: string
   ) {
+    console.log("Setting files:", files);
     this.#files = this.#buildFileTree(files);
     this.#selectedFiles = new Set([initialSelected]);
 
     // Expand all parent directories of the selected file
-    const parts = initialSelected.split("/");
+    const normalizedPath = this.#normalizePath(initialSelected);
+    const parts = normalizedPath.split("/");
     let currentPath = "";
     parts.forEach((part, index) => {
       if (index < parts.length - 1) {
