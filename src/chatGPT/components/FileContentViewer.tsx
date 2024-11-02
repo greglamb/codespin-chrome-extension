@@ -8,6 +8,8 @@ const styleSheet = await getCSS("./FileContentViewer.css", import.meta.url);
 export class FileContentViewer extends HTMLElement {
   #content: string = "";
   #highlightedContent: string = "";
+  #selectedFiles: string[] = [];
+  #currentFile: string | undefined;
 
   constructor() {
     super();
@@ -133,9 +135,39 @@ export class FileContentViewer extends HTMLElement {
     this.render();
   }
 
+  setSelectedFiles(files: string[]) {
+    this.#selectedFiles = files;
+    this.#currentFile = files[0];
+    this.render();
+  }
+
+  getCurrentFile() {
+    return this.#currentFile;
+  }
+
+  handleFileChange(e: Event) {
+    const select = e.target as HTMLSelectElement;
+    this.#currentFile = select.value;
+    this.dispatchEvent(
+      new CustomEvent("filechange", { detail: this.#currentFile })
+    );
+  }
+
   render() {
     const vdom = (
       <div class="viewer-container">
+        {this.#selectedFiles.length > 1 && (
+          <div class="file-selector">
+            <select
+              value={this.#currentFile}
+              onchange={(e) => this.handleFileChange(e)}
+            >
+              {this.#selectedFiles.map((file) => (
+                <option value={file}>{file.split("/").pop()}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <pre class="code-container">
           <code
             class="code-block hljs"

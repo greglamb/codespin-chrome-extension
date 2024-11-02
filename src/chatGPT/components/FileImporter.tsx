@@ -81,33 +81,29 @@ export class FileImporter extends HTMLElement {
     if (viewer) {
       if (selectedCount === 0) {
         viewer.setContent("", undefined);
-      } else if (selectedCount === 1) {
-        try {
-          const selectedFile = Array.from(this.#selectedFiles)[0];
-          const response = await getFileContent(selectedFile);
-          if (response?.success) {
-            viewer.setContent(
-              response.result.contents,
-              response.result.filename
-            );
-          }
-        } catch (err: any) {
-          viewer.setContent(
-            `Error loading file contents: ${err.message}`,
-            undefined
-          );
-        }
       } else {
-        viewer.setContent(
-          `${selectedCount} files selected. Select a single file to view its contents.`,
-          undefined
-        );
+        viewer.setSelectedFiles(Array.from(this.#selectedFiles));
+        await this.loadSelectedFile(viewer.getCurrentFile()!, viewer);
       }
     }
 
     requestAnimationFrame(() => {
       this.render();
     });
+  }
+
+  async loadSelectedFile(filepath: string, viewer: FileContentViewer) {
+    try {
+      const response = await getFileContent(filepath);
+      if (response?.success) {
+        viewer.setContent(response.result.contents, response.result.filename);
+      }
+    } catch (err: any) {
+      viewer.setContent(
+        `Error loading file contents: ${err.message}`,
+        undefined
+      );
+    }
   }
 
   handleCancel() {
@@ -159,7 +155,18 @@ export class FileImporter extends HTMLElement {
             <div class="separator"></div>
 
             <div class="content-container">
-              <codespin-file-content-viewer class="viewer-container"></codespin-file-content-viewer>
+              <codespin-file-content-viewer
+                class="viewer-container"
+                onfilechange={(e: {
+                  detail: string;
+                  target: FileContentViewer;
+                }) => {
+                  this.loadSelectedFile(
+                    e.detail,
+                    e.target as FileContentViewer
+                  );
+                }}
+              ></codespin-file-content-viewer>
             </div>
           </div>
 
