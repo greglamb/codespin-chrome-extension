@@ -1,4 +1,3 @@
-import { exception } from "../../exception.js";
 import {
   FileContent,
   FileSystemNode,
@@ -6,10 +5,9 @@ import {
 } from "../../messageTypes.js";
 import { getDirContents } from "./getDirContents.js";
 import {
-  getDirectoryHandle,
-  getRootDirectoryName,
+  getDirectoryHandle
 } from "./getDirectoryHandle.js";
-import { GitIgnoreHandler } from "./gitIgnore.js";
+import { GitIgnoreHandler } from "./GitIgnoreHandler.js";
 
 export async function getFiles(): Promise<ValidResult<FileSystemNode>> {
   try {

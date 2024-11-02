@@ -1,6 +1,7 @@
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 import { getCSS } from "../../api/loadCSS.js";
+import { getRootDirectoryName } from "../../api/fs/getDirectoryHandle.js";
 
 const styleSheet = await getCSS("./FileTree.css", import.meta.url);
 
@@ -49,7 +50,7 @@ export class ChangeTree extends HTMLElement {
     // Create root node
     const rootNode: FileNode = {
       type: "directory",
-      name: "Changed Files",
+      name: getRootDirectoryName(),
       contents: [],
     };
 

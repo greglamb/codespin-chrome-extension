@@ -1,5 +1,5 @@
 import { FileSystemNode } from "../../messageTypes.js";
-import { GitIgnoreHandler } from "./gitIgnore.js";
+import { GitIgnoreHandler } from "./GitIgnoreHandler.js";
 
 export async function getDirContents(
   handle: FileSystemHandle,
@@ -18,30 +18,22 @@ export async function getDirContents(
       const dirHandle = handle as FileSystemDirectoryHandle;
       const contents: FileSystemNode[] = [];
 
-      try {
-        // Process entries one at a time instead of loading all at once
-        for await (const [name, entryHandle] of dirHandle.entries()) {
-          const entryPath = path ? `${path}/${name}` : name;
+      // Create new handler for this directory if it has a .gitignore
+      const dirHandler = await gitIgnoreHandler.createChildHandler(
+        dirHandle,
+        path
+      );
 
-          // Check if path should be ignored before processing
-          if (await gitIgnoreHandler.shouldIgnorePath(entryPath)) {
-            continue;
-          }
+      // Process directory contents
+      for await (const [name, entryHandle] of dirHandle.entries()) {
+        const entryPath = path ? `${path}/${name}` : name;
 
-          // If this is a directory and it contains a .gitignore file, update rules
-          if (entryHandle.kind === "directory") {
-            await gitIgnoreHandler.updateRulesForDirectory(
-              entryHandle,
-              entryPath
-            );
-          }
-
-          contents.push(
-            await getDirContents(entryHandle, gitIgnoreHandler, entryPath)
-          );
+        if (await dirHandler.shouldIgnorePath(entryPath)) {
+          continue;
         }
-      } catch (error) {
-        console.warn(`Failed to read directory contents for ${path}: ${error}`);
+
+        // Pass the current directory's handler to child directories
+        contents.push(await getDirContents(entryHandle, dirHandler, entryPath));
       }
 
       return {

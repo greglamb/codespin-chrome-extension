@@ -3,6 +3,7 @@ import { applyDiff } from "../../libs/webjsx/index.js";
 import { getFiles } from "../../api/fs/files.js";
 import { FileSystemNode } from "../../messageTypes.js";
 import { getCSS } from "../../api/loadCSS.js";
+import { getRootDirectoryName } from "../../api/fs/getDirectoryHandle.js";
 
 const styleSheet = await getCSS("./FileTree.css", import.meta.url);
 
@@ -113,7 +114,7 @@ export class FileTreeSelector extends HTMLElement {
         >
           {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
           <span>📁</span>
-          <span>{isRoot ? "Project Files" : node.name}</span>
+          <span>{isRoot ? getRootDirectoryName() : node.name}</span>
         </div>
         {isExpanded && node.contents && (
           <div class={`dir-contents ${isRoot ? "root" : ""}`}>
