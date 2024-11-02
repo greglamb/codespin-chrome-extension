@@ -88,6 +88,21 @@ export class FileTreeSelector extends HTMLElement {
     this.render();
   }
 
+  sortContents(contents: FileSystemNode[]): FileSystemNode[] {
+    // Separate directories and files
+    const directories = contents.filter((node) => node.type !== "file");
+    const files = contents.filter((node) => node.type === "file");
+
+    // Sort directories and files separately by name
+    const sortedDirectories = directories.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    const sortedFiles = files.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Return concatenated sorted arrays with directories first
+    return [...sortedDirectories, ...sortedFiles];
+  }
+
   renderNode(node: FileSystemNode, path: string, isRoot: boolean = false) {
     const fullPath = isRoot ? "." : path ? `${path}/${node.name}` : node.name;
     const isExpanded = isRoot || this.#expandedNodes.has(fullPath);
@@ -118,7 +133,9 @@ export class FileTreeSelector extends HTMLElement {
         </div>
         {isExpanded && node.contents && (
           <div class={`dir-contents ${isRoot ? "root" : ""}`}>
-            {node.contents.map((child) => this.renderNode(child, fullPath))}
+            {this.sortContents(node.contents).map((child) =>
+              this.renderNode(child, fullPath)
+            )}
           </div>
         )}
       </div>
