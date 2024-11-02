@@ -13,15 +13,22 @@
 }
 
 .sync-button {
-  display: flex;
-  gap: 0.25rem;
   align-items: center;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  background: transparent;
+  background: #2f2f2f;
   border: 0;
+  border-radius: 4px;
   color: inherit;
   cursor: pointer;
+  display: flex;
+  font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Helvetica,
+    Apple Color Emoji, Arial, sans-serif, Segoe UI Emoji, Segoe UI Symbol;
+  font-size: 12px;
+  gap: 0.25rem;
+  margin-top: 0;
+  padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
+  padding: 4px 12px 5px 12px;
+  width: 100px;
 }
 
 .dialog {
