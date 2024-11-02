@@ -63,7 +63,7 @@ codespin-file-tree {
   display: block;
   width: 100%;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .content-container {

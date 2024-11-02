@@ -2,7 +2,7 @@ import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 import { getCSS } from "../../api/loadCSS.js";
 
-const styleSheet = await getCSS("./ChangeTree.css", import.meta.url);
+const styleSheet = await getCSS("./FileTree.css", import.meta.url);
 
 interface FileNode {
   type: "file" | "directory";
@@ -12,8 +12,8 @@ interface FileNode {
 }
 
 export class ChangeTree extends HTMLElement {
-  #selectedFiles: Set<string> = new Set();
   #expandedNodes: Set<string> = new Set();
+  #selectedFiles: Set<string> = new Set();
   #files: FileNode[] = [];
 
   constructor() {
@@ -26,16 +26,20 @@ export class ChangeTree extends HTMLElement {
     return path.replace(/^\.?\//, "");
   }
 
-  #buildFileTree(files: { path: string; content: string }[]): FileNode[] {
-    // Create a root directory map
+  #buildFileTree(files: { path: string; content: string }[]): FileNode {
     const dirMap: { [key: string]: FileNode } = {};
 
-    // Process each file
+    // Create root node
+    const rootNode: FileNode = {
+      type: "directory",
+      name: "Changed Files",
+      contents: [],
+    };
+
     files.forEach((file) => {
       const normalizedPath = this.#normalizePath(file.path);
       const parts = normalizedPath.split("/");
 
-      // Create directories for each part of the path
       let currentPath = "";
       for (let i = 0; i < parts.length - 1; i++) {
         const part = parts[i];
@@ -50,7 +54,6 @@ export class ChangeTree extends HTMLElement {
         }
       }
 
-      // Create file node
       const fileName = parts[parts.length - 1];
       const fileNode: FileNode = {
         type: "file",
@@ -58,22 +61,20 @@ export class ChangeTree extends HTMLElement {
         path: file.path,
       };
 
-      // Add file to its parent directory
       const parentPath = parts.slice(0, -1).join("/");
       if (parentPath) {
         dirMap[parentPath].contents!.push(fileNode);
+      } else {
+        rootNode.contents!.push(fileNode);
       }
     });
 
-    // Build the tree structure
-    const rootNodes: FileNode[] = [];
+    // Add directories to their parents
     Object.entries(dirMap).forEach(([path, node]) => {
       const parts = path.split("/");
       if (parts.length === 1) {
-        // This is a root level directory
-        rootNodes.push(node);
+        rootNode.contents!.push(node);
       } else {
-        // This is a nested directory, add it to its parent
         const parentPath = parts.slice(0, -1).join("/");
         if (dirMap[parentPath]) {
           dirMap[parentPath].contents!.push(node);
@@ -81,7 +82,7 @@ export class ChangeTree extends HTMLElement {
       }
     });
 
-    // Sort contents of all directories
+    // Sort nodes
     const sortNodes = (nodes: FileNode[]) => {
       nodes.sort((a, b) => {
         if (a.type !== b.type) {
@@ -97,22 +98,24 @@ export class ChangeTree extends HTMLElement {
       });
     };
 
-    sortNodes(rootNodes);
-    console.log("Built tree:", JSON.stringify(rootNodes, null, 2));
-    return rootNodes;
+    if (rootNode.contents) {
+      sortNodes(rootNode.contents);
+    }
+
+    return rootNode;
   }
 
   setFiles(
     files: { path: string; content: string }[],
     initialSelected: string
   ) {
-    console.log("Setting files:", files);
-    this.#files = this.#buildFileTree(files);
+    const rootNode = this.#buildFileTree(files);
+    this.#files = [rootNode];
     this.#selectedFiles = new Set([initialSelected]);
 
-    // Expand all parent directories of the selected file
-    const normalizedPath = this.#normalizePath(initialSelected);
-    const parts = normalizedPath.split("/");
+    // Expand directories to show selected file
+    const selectedPath = this.#normalizePath(initialSelected);
+    const parts = selectedPath.split("/");
     let currentPath = "";
     parts.forEach((part, index) => {
       if (index < parts.length - 1) {
@@ -134,39 +137,47 @@ export class ChangeTree extends HTMLElement {
     this.render();
   }
 
-  handleFileClick(e: MouseEvent, path: string) {
+  handleSelect(e: MouseEvent, path: string, node: FileNode) {
     e.stopPropagation();
 
-    if (e.ctrlKey || e.metaKey) {
-      if (this.#selectedFiles.has(path)) {
-        this.#selectedFiles.delete(path);
-      } else {
-        this.#selectedFiles.add(path);
-      }
-    } else {
-      this.#selectedFiles.clear();
-      this.#selectedFiles.add(path);
-    }
+    if (node.type === "file") {
+      const prevSelection = new Set(this.#selectedFiles);
 
-    this.dispatchEvent(
-      new CustomEvent("select", {
-        detail: Array.from(this.#selectedFiles),
-      })
-    );
+      if (!e.ctrlKey && !e.metaKey) {
+        this.#selectedFiles.clear();
+        this.#selectedFiles.add(path);
+      } else {
+        if (this.#selectedFiles.has(path)) {
+          this.#selectedFiles.delete(path);
+        } else {
+          this.#selectedFiles.add(path);
+        }
+      }
+
+      // Only dispatch if selection changed
+      const newSelection = Array.from(this.#selectedFiles);
+      const prevArray = Array.from(prevSelection);
+      if (
+        newSelection.length !== prevArray.length ||
+        !newSelection.every((file) => prevSelection.has(file))
+      ) {
+        this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
+      }
+    }
 
     this.render();
   }
 
-  renderNode(node: FileNode, path: string = "") {
+  renderNode(node: FileNode, path: string, isRoot: boolean = false) {
     const fullPath = path ? `${path}/${node.name}` : node.name;
+    const isExpanded = isRoot || this.#expandedNodes.has(fullPath);
+    const isSelected = node.path && this.#selectedFiles.has(node.path);
 
     if (node.type === "file") {
       return (
         <div
-          class={`file-item ${
-            this.#selectedFiles.has(node.path!) ? "selected" : ""
-          }`}
-          onclick={(e) => this.handleFileClick(e, node.path!)}
+          class={`file-item ${isSelected ? "selected" : ""}`}
+          onclick={(e) => this.handleSelect(e, node.path!, node)}
         >
           <span>📄</span>
           <span>{node.name}</span>
@@ -174,17 +185,18 @@ export class ChangeTree extends HTMLElement {
       );
     }
 
-    const isExpanded = this.#expandedNodes.has(fullPath);
-
     return (
       <div>
-        <div class="dir-item" onclick={(e) => this.handleDirClick(e, fullPath)}>
-          <span>{isExpanded ? "▾" : "▸"}</span>
+        <div
+          class={`dir-item ${isRoot ? "root" : ""}`}
+          onclick={(e) => !isRoot && this.handleDirClick(e, fullPath)}
+        >
+          {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
           <span>📁</span>
           <span>{node.name}</span>
         </div>
         {isExpanded && node.contents && (
-          <div class="dir-contents">
+          <div class={`dir-contents ${isRoot ? "root" : ""}`}>
             {node.contents.map((child) => this.renderNode(child, fullPath))}
           </div>
         )}
@@ -193,13 +205,17 @@ export class ChangeTree extends HTMLElement {
   }
 
   render() {
-    const vdom = (
+    const container = (
       <div class="tree-container">
-        {this.#files.map((file) => this.renderNode(file))}
+        {this.#files.map((file) => this.renderNode(file, "", true))}
       </div>
     );
 
-    applyDiff(this.shadowRoot!, vdom);
+    applyDiff(this.shadowRoot!, container);
+  }
+
+  getSelectedFiles(): string[] {
+    return Array.from(this.#selectedFiles);
   }
 }
 

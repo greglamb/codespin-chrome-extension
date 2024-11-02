@@ -1,44 +1,41 @@
+/* Container */
 .tree-container {
   height: 100%;
   background: #252526;
   border-radius: 4px;
   overflow-y: auto;
   font-size: 13px;
+  padding: 8px 0;
 }
 
+/* File Items */
 .file-item {
   position: relative;
   transition: background-color 0.1s ease;
-  padding: 4px 8px;
-  padding-left: 24px;
+  padding: 4px 8px 4px 12px;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  user-select: none;
 }
 
 .file-item:hover {
-  background-color: #2b579a44;
+  background-color: rgba(43, 87, 154, 0.267);
 }
 
+.file-item[data-selected="true"],
 .file-item.selected {
   background-color: #2b579a;
   color: white;
 }
 
+.file-item[data-selected="true"]:hover,
 .file-item.selected:hover {
-  background-color: #2b579add;
+  background-color: rgba(43, 87, 154, 0.867);
 }
 
-.file-meta {
-  color: var(--meta-color, #666);
-  font-size: 0.8em;
-}
-
-.file-item.selected .file-meta {
-  --meta-color: #ccc;
-}
-
+/* Directory Items */
 .dir-item {
   padding: 4px 8px;
   display: flex;
@@ -49,7 +46,12 @@
 }
 
 .dir-item:hover {
-  background-color: #2b579a22;
+  background-color: rgba(43, 87, 154, 0.133);
+}
+
+/* Directory Hierarchy */
+.dir-contents {
+  padding-left: 16px;
 }
 
 .dir-item.root {
@@ -57,17 +59,35 @@
 }
 
 .dir-item:not(.root) {
-  padding-left: 24px;
+  padding-left: 12px;
 }
 
-.dir-contents {
-  margin-left: var(--indent, 0px);
+.dir-contents.root {
+  --indent: 0px;
 }
 
 .dir-contents:not(.root) {
-  --indent: 12px;
+  --indent: 8px;
+  margin-left: var(--indent);
 }
 
+/* Icons */
+.dir-item span:first-child {
+  width: 12px;
+  text-align: center;
+}
+
+/* Metadata */
+.file-meta {
+  color: var(--meta-color, #666);
+  font-size: 0.8em;
+}
+
+.file-item.selected .file-meta {
+  --meta-color: #ccc;
+}
+
+/* Messages */
 .message {
   padding: 8px 24px;
 }
