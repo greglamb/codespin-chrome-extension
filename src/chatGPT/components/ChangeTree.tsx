@@ -15,6 +15,7 @@ export class ChangeTree extends HTMLElement {
   #expandedNodes: Set<string> = new Set();
   #selectedFiles: Set<string> = new Set();
   #files: FileNode[] = [];
+  #initialSelected: string | null = null;
 
   constructor() {
     super();
@@ -127,7 +128,13 @@ export class ChangeTree extends HTMLElement {
   ) {
     const rootNode = this.#buildFileTree(files);
     this.#files = [rootNode];
-    this.#selectedFiles = new Set([initialSelected]);
+
+    // Only set initial selection if it's different from the previous initial selection
+    if (this.#initialSelected !== initialSelected) {
+      this.#selectedFiles.clear();
+      this.#selectedFiles.add(initialSelected);
+      this.#initialSelected = initialSelected;
+    }
 
     // Expand all directories by default
     this.#expandedNodes.clear();
@@ -154,9 +161,11 @@ export class ChangeTree extends HTMLElement {
       const prevSelection = new Set(this.#selectedFiles);
 
       if (!e.ctrlKey && !e.metaKey) {
+        // Single click - clear selection and select only this file
         this.#selectedFiles.clear();
         this.#selectedFiles.add(node.path);
       } else {
+        // Ctrl/Cmd click - toggle selection
         if (this.#selectedFiles.has(node.path)) {
           this.#selectedFiles.delete(node.path);
         } else {
@@ -185,13 +194,12 @@ export class ChangeTree extends HTMLElement {
   renderNode(node: FileNode, path: string, isRoot: boolean = false) {
     const fullPath = path ? `${path}/${node.name}` : node.name;
     const isExpanded = isRoot || this.#expandedNodes.has(fullPath);
+    const isSelected = node.path && this.#selectedFiles.has(node.path);
 
     if (node.type === "file") {
       return (
         <div
-          class={`file-item ${
-            node.path && this.#selectedFiles.has(node.path) ? "selected" : ""
-          }`}
+          class={`file-item ${isSelected ? "selected" : ""}`}
           onclick={(e) => this.handleSelect(e, node)}
         >
           <span>📄</span>
