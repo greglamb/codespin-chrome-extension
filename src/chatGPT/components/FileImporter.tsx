@@ -161,13 +161,23 @@ export class FileImporter extends HTMLElement {
       <div class="modal-overlay">
         <div class="modal-content">
           <div class="main-container">
-            <div class="file-tree-container">
-              <codespin-file-tree
-                onselect={(e) => {
-                  this.handleFileSelect(e);
-                }}
-                oncancel={() => this.handleCancel()}
-              ></codespin-file-tree>
+            <div class="file-tree-section">
+              <div class="file-tree-container">
+                <codespin-file-tree
+                  onselect={(e) => {
+                    this.handleFileSelect(e);
+                  }}
+                  oncancel={() => this.handleCancel()}
+                ></codespin-file-tree>
+              </div>
+              <div class="tree-actions">
+                <button
+                  class="button button-disconnect"
+                  onclick={() => this.handleDisconnect()}
+                >
+                  Change Directory
+                </button>
+              </div>
             </div>
 
             <div class="separator"></div>
@@ -186,15 +196,6 @@ export class FileImporter extends HTMLElement {
                 }}
               ></codespin-file-content-viewer>
             </div>
-          </div>
-
-          <div class="left-button-container">
-            <button
-              class="button button-disconnect"
-              onclick={() => this.handleDisconnect()}
-            >
-              Change Directory
-            </button>
           </div>
 
           <div class="button-container">

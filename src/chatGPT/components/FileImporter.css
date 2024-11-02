@@ -23,12 +23,26 @@
 }
 
 .file-tree-container {
-  flex: 0 0 var(--tree-width);
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 200px;
   max-width: 800px;
+  width: var(--tree-width);
+  overflow-y: auto;
+}
+
+.file-tree-section {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+}
+
+.tree-actions {
+  flex: 0 0 auto;
+  display: flex;
+  padding: 0 8px;
+  gap: 8px;
 }
 
 .separator {
@@ -58,12 +72,10 @@
 }
 
 codespin-file-tree {
-  height: 100%;
+  flex: 1;
   white-space: nowrap;
   display: block;
   width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
 }
 
 .content-container {
@@ -87,12 +99,6 @@ codespin-file-tree {
   gap: 8px;
 }
 
-.left-button-container {
-  position: absolute;
-  bottom: 16px;
-  left: 16px;
-}
-
 .button {
   padding: 6px 12px;
   border: none;
@@ -113,6 +119,9 @@ codespin-file-tree {
 
 .button-disconnect {
   background: #444;
+  flex: 1;
+  margin: 0;
+  max-width: 200px;
 }
 
 .button-select:disabled {
