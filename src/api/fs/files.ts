@@ -1,3 +1,4 @@
+import { exception } from "../../exception.js";
 import {
   FileContent,
   FileSystemNode,
@@ -29,13 +30,14 @@ export async function getFileContent(
   path: string
 ): Promise<ValidResult<FileContent>> {
   try {
-    const rootDirectoryName = getRootDirectoryName();
+    if (!path.startsWith("./")) {
+      throw new Error(`Invalid path ${path}. Must start with "./".`);
+    }
+
     const dirHandle = await getDirectoryHandle();
 
     // Remove root directory name from path if it exists
-    const normalizedPath = path.startsWith(rootDirectoryName + "/")
-      ? path.slice(rootDirectoryName.length + 1)
-      : path.slice(rootDirectoryName.length);
+    const normalizedPath = path.slice(2);
 
     const pathParts = normalizedPath.split("/").filter((p) => p.length > 0);
 

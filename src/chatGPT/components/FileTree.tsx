@@ -88,7 +88,7 @@ export class FileTreeSelector extends HTMLElement {
   }
 
   renderNode(node: FileSystemNode, path: string, isRoot: boolean = false) {
-    const fullPath = path ? `${path}/${node.name}` : node.name;
+    const fullPath = isRoot ? "." : path ? `${path}/${node.name}` : node.name;
     const isExpanded = isRoot || this.#expandedNodes.has(fullPath);
     const isSelected = this.#selectedFiles.has(fullPath);
 

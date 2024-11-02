@@ -5,12 +5,45 @@
   border-radius: 4px;
   padding-left: 16px;
   padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.view-mode-selector {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #252526;
+  margin: -8px -16px 8px -16px;
+}
+
+.mode-button {
+  padding: 4px 12px;
+  border: 1px solid #444;
+  background: #2d2d2d;
+  color: #d4d4d4;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.mode-button:hover {
+  background: #3d3d3d;
+  border-color: #666;
+}
+
+.mode-button.active {
+  background: #2b579a;
+  border-color: #2b579a;
+  color: white;
 }
 
 .code-container {
   margin: 0;
   height: 100%;
   overflow: auto;
+  flex: 1;
 }
 
 .code-block {
@@ -21,6 +54,12 @@
   line-height: 1.4;
   tab-size: 2;
   white-space: pre;
+}
+
+.loading {
+  padding: 16px;
+  color: #888;
+  font-style: italic;
 }
 
 /* Base highlighting styles */
