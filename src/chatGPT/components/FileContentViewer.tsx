@@ -1,6 +1,11 @@
-import * as webjsx from "webjsx";
-import { applyDiff } from "webjsx";
-import hljs from "highlight.js";
+import * as webjsx from "../../libs/webjsx/index.js";
+import { applyDiff } from "../../libs/webjsx/index.js";
+import hljs from "../../libs/highlight.js/index.js";
+
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(
+  await fetch("./FileContentViewer.css").then((r) => r.text())
+);
 
 export class FileContentViewer extends HTMLElement {
   #content: string = "";
@@ -9,6 +14,7 @@ export class FileContentViewer extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.shadowRoot!.adoptedStyleSheets = [styleSheet];
   }
 
   detectLanguage(filename: string): string | undefined {

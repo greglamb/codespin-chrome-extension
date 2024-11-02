@@ -1,5 +1,5 @@
-import * as webjsx from "webjsx";
-import { applyDiff } from "webjsx";
+import * as webjsx from "../../libs/webjsx/index.js";
+import { applyDiff } from "../../libs/webjsx/index.js";
 import { getFiles } from "../../api/fs/files.js";
 import { FileSystemNode } from "../../messageTypes.js";
 

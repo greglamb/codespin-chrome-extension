@@ -1,11 +1,9 @@
-import "side-drawer";
-import * as webjsx from "webjsx";
+import * as webjsx from "../libs/webjsx/index.js";
 
 import "./components/InboundButton.js";
 import "./components/ModalDialog.js";
 import "./components/ModalMessage.js";
 import "./components/SyncButton.js";
-import "./components/SyncForm.js";
 import "./components/FileImporter.js";
 import "./components/FileTree.js";
 import "./components/FileContentViewer.js";

@@ -1,14 +1,13 @@
-import "webjsx";
-import { VNode } from "webjsx";
+import "../libs/webjsx/index.js";
+import { VNode } from "../libs/webjsx/index.js";
 
-declare module "webjsx" {
+declare module "../libs/webjsx/index.js" {
   namespace JSX {
     interface IntrinsicElements {
       "codespin-sync-icon": {};
       "codespin-icon": {};
       "codespin-sync-button": {};
       "codespin-inbound-button": {};
-      "codespin-sync-form": {};
       "codespin-modal-dialog": {
         ref?: (el: HTMLElement) => void;
         resolve?: () => void;
@@ -27,13 +26,6 @@ declare module "webjsx" {
         oncancel?: (event: Event) => void;
       };
       "codespin-file-content-viewer": {
-        style?: string;
-      };
-      "side-drawer": {
-        id?: string;
-        open?: boolean;
-        right?: string;
-        children?: VNode | VNode[];
         style?: string;
       };
     }
