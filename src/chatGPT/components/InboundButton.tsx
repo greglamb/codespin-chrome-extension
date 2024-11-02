@@ -7,6 +7,8 @@ import { exception } from "../../exception.js";
 const styleSheet = await getCSS("./InboundButton.css", import.meta.url);
 
 export class InboundButton extends HTMLElement {
+  #dialog: HTMLDialogElement | null = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -18,6 +20,32 @@ export class InboundButton extends HTMLElement {
     this.shadowRoot!.querySelector(
       "#codespin-inbound-button"
     )?.addEventListener("click", this.handleClick.bind(this));
+  }
+
+  disconnectedCallback() {
+    // Clean up the dialog when the component is removed
+    this.#dialog?.remove();
+    this.#dialog = null;
+  }
+
+  async initializeDialog() {
+    if (this.#dialog) return;
+
+    this.#dialog = webjsx.createNode(
+      <dialog class="dialog">
+        <codespin-file-importer
+          onselect={(e: CustomEvent<string[]>) => {
+            this.handleFileSelection(e.detail);
+            this.#dialog?.close();
+          }}
+          oncancel={() => {
+            this.#dialog?.close();
+          }}
+        />
+      </dialog>
+    ) as HTMLDialogElement;
+
+    document.body.appendChild(this.#dialog);
   }
 
   async handleFileSelection(selectedFiles: string[]) {
@@ -71,23 +99,9 @@ export class InboundButton extends HTMLElement {
     applyDiff(this.shadowRoot!, vdom);
   }
 
-  handleClick() {
-    const dialog = webjsx.createNode(
-      <dialog class="dialog">
-        <codespin-file-importer
-          onselect={(e: CustomEvent<string[]>) => {
-            this.handleFileSelection(e.detail);
-            dialog.remove();
-          }}
-          oncancel={() => {
-            dialog.remove();
-          }}
-        />
-      </dialog>
-    ) as HTMLDialogElement;
-
-    document.body.appendChild(dialog);
-    dialog.showModal();
+  async handleClick() {
+    await this.initializeDialog();
+    this.#dialog?.showModal();
   }
 }
 
