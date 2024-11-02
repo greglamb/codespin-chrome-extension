@@ -9,6 +9,7 @@
   font-size: 0.75rem;
   color: var(--token-text-secondary);
   margin-right: 4px;
+  cursor: pointer;
 }
 
 .sync-button {
