@@ -93,7 +93,6 @@ export async function writeFileContent(
   content: string
 ): Promise<ValidResult<void>> {
   try {
-    const rootDirectoryName = getRootDirectoryName();
     const dirHandle = await getDirectoryHandle();
 
     // Handle paths starting with "./" or "."

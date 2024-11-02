@@ -10,10 +10,9 @@ export type ErrorResult<TError> = {
 };
 export type Result<T, TError = string> = ValidResult<T> | ErrorResult<TError>;
 
-
 // Data Types
 export type FileSystemNode =
-  | { type: "file"; name: string; length: number }
+  | { type: "file"; name: string }
   | { type: "dir"; name: string; contents: FileSystemNode[] };
 
 export type FileContent = {

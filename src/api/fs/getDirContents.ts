@@ -13,7 +13,6 @@ export async function getDirContents(
       return {
         type: "file",
         name: handle.name,
-        length: file.size,
       };
     } else {
       const dirHandle = handle as FileSystemDirectoryHandle;

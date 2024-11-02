@@ -111,9 +111,7 @@ export class FileTreeSelector extends HTMLElement {
               color: ${isSelected ? "#ccc" : "#666"}; 
               font-size: 0.8em;
             `}
-          >
-            ({node.length} bytes)
-          </span>
+          ></span>
         </div>
       );
     }
