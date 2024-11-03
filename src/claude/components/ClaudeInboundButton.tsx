@@ -3,6 +3,8 @@ import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
 import { getFileContent } from "../../api/fs/files.js";
 import { exception } from "../../exception.js";
+import { insertHTML } from "../../api/contentEditable.js";
+import { createPromptFromFileSelection } from "../../api/prompt.js";
 
 const styleSheet = await getCSS("./ClaudeInboundButton.css", import.meta.url);
 
@@ -50,51 +52,13 @@ export class ClaudeInboundButton extends HTMLElement {
 
   async handleFileSelection(selectedFiles: string[]) {
     try {
-      const prompt =
-        "File contents below:\n======================\n" +
-        (
-          await Promise.all(
-            selectedFiles.map(async (filePath) => {
-              const fileContentsResponse = await getFileContent(filePath);
-              return fileContentsResponse.success
-                ? `File path: ./${fileContentsResponse.result.path}\n\`\`\`\n${fileContentsResponse.result.contents}\`\`\`\n`
-                : exception(`Failed to fetch ${filePath}`);
-            })
-          )
-        ).join("\n\n") +
-        `\n======================\nEnd of file contents\n
-
-          All the code you output in this conversation should be formatted in the following way:
-
-          File path: ./path/to/file1.txt
-          \`\`\`
-          file1.txt contents go here...
-          \`\`\`
-
-          File path: ./path/to/file2.txt
-          \`\`\`
-          file2.txt contents go here...
-          \`\`\`
-
-          Note that you must always output the entire file whenever you're changing something.
-          \n\n`;
+      const prompt = await createPromptFromFileSelection(selectedFiles);
 
       const editor = document.querySelector(
         '.ProseMirror[contenteditable="true"]'
       );
       if (editor) {
-        // Split the prompt by newlines
-        const lines = prompt.split("\n");
-
-        // Create and append a p element for each line
-        lines.forEach((line) => {
-          if (line.trim()) {
-            // Only create elements for non-empty lines
-            const p = document.createElement("p");
-            p.textContent = line;
-            editor.appendChild(p);
-          }
-        });
+        insertHTML(editor, prompt);
       }
     } catch (error) {
       console.error("Error loading file contents:", error);
