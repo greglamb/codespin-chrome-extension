@@ -3,6 +3,8 @@
 CodeSpin.AI Chat allows you to use Claude and ChatGPT to edit your local project - using the new File System APIs available on Chrome. 
 This extension is not yet available on the Chrome Web Store (it takes weeks for approval), so it must be installed manually.
 
+![image](https://github.com/user-attachments/assets/1e98b3a4-e9ec-4398-8222-8eb80b186e35)
+
 Clone this project
 
 ```sh
