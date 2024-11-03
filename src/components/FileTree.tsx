@@ -1,9 +1,9 @@
+import { getFiles } from "../api/fs/files.js";
+import { getRootDirectoryName } from "../api/fs/getDirectoryHandle.js";
+import { getCSS } from "../api/loadCSS.js";
 import * as webjsx from "../libs/webjsx/index.js";
 import { applyDiff } from "../libs/webjsx/index.js";
-import { getFiles } from "../api/fs/files.js";
 import { FileSystemNode } from "../messageTypes.js";
-import { getCSS } from "../api/loadCSS.js";
-import { getRootDirectoryName } from "../api/fs/getDirectoryHandle.js";
 
 const styleSheet = await getCSS("./FileTree.css", import.meta.url);
 
@@ -31,7 +31,7 @@ export class FileTreeSelector extends HTMLElement {
     this.render();
 
     try {
-      const response = await getFiles();
+      const response = await getFiles(true);
       if (response?.success) {
         this.#files = response.result as FileSystemNode;
       } else {

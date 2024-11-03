@@ -3,7 +3,7 @@ import { GitIgnoreHandler } from "./GitIgnoreHandler.js";
 
 export async function getDirContents(
   handle: FileSystemHandle,
-  gitIgnoreHandler: GitIgnoreHandler,
+  gitIgnoreHandler: GitIgnoreHandler | null,
   path = ""
 ): Promise<FileSystemNode> {
   try {
@@ -17,25 +17,24 @@ export async function getDirContents(
     } else {
       const dirHandle = handle as FileSystemDirectoryHandle;
       const contents: FileSystemNode[] = [];
-
-      // Create new handler for this directory if it has a .gitignore
-      const dirHandler = await gitIgnoreHandler.createChildHandler(
-        dirHandle,
-        path
-      );
+      
+      // Create new handler for this directory if we're processing gitignore files
+      const dirHandler = gitIgnoreHandler 
+        ? await gitIgnoreHandler.createChildHandler(dirHandle, path)
+        : null;
 
       // Process directory contents
       for await (const [name, entryHandle] of dirHandle.entries()) {
         const entryPath = path ? `${path}/${name}` : name;
-
-        if (await dirHandler.shouldIgnorePath(entryPath)) {
+        
+        // Skip if path should be ignored and we're processing gitignore
+        if (dirHandler && await dirHandler.shouldIgnorePath(entryPath)) {
           continue;
         }
-
-        // Pass the current directory's handler to child directories
+        
         contents.push(await getDirContents(entryHandle, dirHandler, entryPath));
       }
-
+      
       return {
         type: "dir",
         name: handle.name,

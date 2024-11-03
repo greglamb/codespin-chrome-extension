@@ -4,17 +4,16 @@ import {
   ValidResult,
 } from "../../messageTypes.js";
 import { getDirContents } from "./getDirContents.js";
-import {
-  getDirectoryHandle
-} from "./getDirectoryHandle.js";
+import { getDirectoryHandle } from "./getDirectoryHandle.js";
 import { GitIgnoreHandler } from "./GitIgnoreHandler.js";
 
-export async function getFiles(): Promise<ValidResult<FileSystemNode>> {
+export async function getFiles(
+  processGitIgnore: boolean
+): Promise<ValidResult<FileSystemNode>> {
   try {
     const dirHandle = await getDirectoryHandle();
-    const gitIgnoreHandler = new GitIgnoreHandler();
+    const gitIgnoreHandler = processGitIgnore ? new GitIgnoreHandler() : null;
     const rootNode = await getDirContents(dirHandle, gitIgnoreHandler);
-
     return {
       success: true,
       result: rootNode,

@@ -1,11 +1,8 @@
+import { insertHTML } from "../../api/contentEditable.js";
 import { getCSS } from "../../api/loadCSS.js";
+import { fromFileSelection } from "../../api/prompt.js";
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
-import { getFileContent } from "../../api/fs/files.js";
-import { exception } from "../../exception.js";
-import { insertHTML, pasteText } from "../../api/contentEditable.js";
-import { trimWhitespace } from "../../api/templating.js";
-import { createPromptFromFileSelection } from "../../api/prompt.js";
 
 const styleSheet = await getCSS("./ChatGPTInboundButton.css", import.meta.url);
 
@@ -53,7 +50,7 @@ export class ChatGPTInboundButton extends HTMLElement {
 
   async handleFileSelection(selectedFiles: string[]) {
     try {
-      const prompt = await createPromptFromFileSelection(selectedFiles);
+      const prompt = await fromFileSelection(selectedFiles);
 
       const editor = document.querySelector(
         "#prompt-textarea"
