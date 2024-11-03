@@ -9,6 +9,9 @@ Select Files to include in the prompt:
 
 ![image](https://github.com/user-attachments/assets/1e98b3a4-e9ec-4398-8222-8eb80b186e35)
 
+Add files to prompt, and Sync back with your project
+
+![codespin-features](https://github.com/user-attachments/assets/5f2da8cf-76f0-4c69-8234-a19556765cee)
 
 Write it back!
 
