@@ -7,7 +7,7 @@ import { FileSystemNode } from "../messageTypes.js";
 
 const styleSheet = await getCSS("./FileTree.css", import.meta.url);
 
-export class FileTreeSelector extends HTMLElement {
+export class FileTree extends HTMLElement {
   #expandedNodes: Set<string> = new Set();
   #selectedFiles: Set<string> = new Set();
   #files: FileSystemNode | null = null;
@@ -29,7 +29,6 @@ export class FileTreeSelector extends HTMLElement {
     this.#loading = true;
     this.#error = null;
     this.render();
-
     try {
       const response = await getFiles(true);
       if (response?.success) {
@@ -45,6 +44,10 @@ export class FileTreeSelector extends HTMLElement {
     }
   }
 
+  get files() {
+    return this.#files;
+  }
+
   handleDirClick(e: MouseEvent, path: string) {
     e.stopPropagation();
     if (this.#expandedNodes.has(path)) {
@@ -57,32 +60,29 @@ export class FileTreeSelector extends HTMLElement {
 
   handleSelect(e: MouseEvent, path: string, node: FileSystemNode) {
     e.stopPropagation();
+    const prevSelection = new Set(this.#selectedFiles);
 
-    if (node.type === "file") {
-      const prevSelection = new Set(this.#selectedFiles);
-
-      if (!e.ctrlKey && !e.metaKey) {
-        // Single click without Ctrl/Cmd - clear selection and select only this file
-        this.#selectedFiles.clear();
-        this.#selectedFiles.add(path);
+    if (!e.ctrlKey && !e.metaKey) {
+      // Single click without Ctrl/Cmd - clear selection and select only this item
+      this.#selectedFiles.clear();
+      this.#selectedFiles.add(path);
+    } else {
+      // Ctrl/Cmd click - toggle selection
+      if (this.#selectedFiles.has(path)) {
+        this.#selectedFiles.delete(path);
       } else {
-        // Ctrl/Cmd click - toggle selection
-        if (this.#selectedFiles.has(path)) {
-          this.#selectedFiles.delete(path);
-        } else {
-          this.#selectedFiles.add(path);
-        }
+        this.#selectedFiles.add(path);
       }
+    }
 
-      // Only dispatch if selection actually changed
-      const newSelection = Array.from(this.#selectedFiles);
-      const prevArray = Array.from(prevSelection);
-      if (
-        newSelection.length !== prevArray.length ||
-        !newSelection.every((file) => prevSelection.has(file))
-      ) {
-        this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
-      }
+    // Only dispatch if selection actually changed
+    const newSelection = Array.from(this.#selectedFiles);
+    const prevArray = Array.from(prevSelection);
+    if (
+      newSelection.length !== prevArray.length ||
+      !newSelection.every((file) => prevSelection.has(file))
+    ) {
+      this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
     }
 
     this.render();
@@ -124,8 +124,15 @@ export class FileTreeSelector extends HTMLElement {
     return (
       <div>
         <div
-          class={`dir-item ${isRoot ? "root" : ""}`}
-          onclick={(e) => !isRoot && this.handleDirClick(e, fullPath)}
+          class={`dir-item ${isRoot ? "root" : ""} ${
+            isSelected ? "selected" : ""
+          }`}
+          onclick={(e) => {
+            if (!isRoot) {
+              this.handleSelect(e, fullPath, node);
+              this.handleDirClick(e, fullPath);
+            }
+          }}
         >
           {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
           <span>📁</span>
@@ -150,7 +157,6 @@ export class FileTreeSelector extends HTMLElement {
         {this.#files && this.renderNode(this.#files, "", true)}
       </div>
     );
-
     applyDiff(this.shadowRoot!, vdom);
   }
 
@@ -159,4 +165,4 @@ export class FileTreeSelector extends HTMLElement {
   }
 }
 
-customElements.define("codespin-file-tree", FileTreeSelector);
+customElements.define("codespin-file-tree", FileTree);

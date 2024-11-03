@@ -45,7 +45,16 @@
 }
 
 .dir-item:hover {
-  background-color: rgba(43, 87, 154, 0.133);
+  background-color: rgba(43, 87, 154, 0.267);
+}
+
+.dir-item.selected {
+  background-color: #2b579a;
+  color: white;
+}
+
+.dir-item.selected:hover {
+  background-color: rgba(43, 87, 154, 0.867);
 }
 
 /* Directory Hierarchy */

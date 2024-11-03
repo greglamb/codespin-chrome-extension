@@ -7,6 +7,8 @@ import {
   clearFileSystemCache,
   getDirectoryHandle,
 } from "../api/fs/getDirectoryHandle.js";
+import { FileSystemNode } from "../messageTypes.js";
+import { FileTree } from "./FileTree.js";
 
 const styleSheet = await getCSS("./FileImporter.css", import.meta.url);
 
@@ -16,6 +18,7 @@ export class FileImporter extends HTMLElement {
   #isDragging: boolean = false;
   #dragStartX: number = 0;
   #dragStartWidth: number = 0;
+  #fileTree: Map<string, FileSystemNode> = new Map();
 
   constructor() {
     super();
@@ -35,7 +38,6 @@ export class FileImporter extends HTMLElement {
 
   #handleMouseMove = (e: MouseEvent) => {
     if (!this.#isDragging) return;
-
     const deltaX = e.clientX - this.#dragStartX;
     const newWidth = Math.max(
       200,
@@ -47,7 +49,6 @@ export class FileImporter extends HTMLElement {
 
   #handleMouseUp = () => {
     if (!this.#isDragging) return;
-
     this.#isDragging = false;
     document.removeEventListener("mousemove", this.#handleMouseMove);
     document.removeEventListener("mouseup", this.#handleMouseUp);
@@ -60,22 +61,81 @@ export class FileImporter extends HTMLElement {
   #setupDragListeners() {
     const separator = this.shadowRoot!.querySelector(".separator");
     if (!separator) return;
-
     separator.addEventListener("mousedown", (e: Event) => {
       this.#isDragging = true;
       this.#dragStartX = (e as MouseEvent).clientX;
       this.#dragStartWidth = this.#treeWidth;
       separator.classList.add("dragging");
-
       document.addEventListener("mousemove", this.#handleMouseMove);
       document.addEventListener("mouseup", this.#handleMouseUp);
       e.preventDefault();
     });
   }
 
+  #buildFileTreeMap(
+    node: FileSystemNode,
+    path: string,
+    isRoot: boolean = false
+  ) {
+    const fullPath = isRoot ? "." : path ? `${path}/${node.name}` : node.name;
+    this.#fileTree.set(fullPath, node);
+
+    if (node.type === "dir" && node.contents) {
+      for (const child of node.contents) {
+        this.#buildFileTreeMap(child, fullPath);
+      }
+    }
+  }
+
+  #getAllFilesInDirectory(dirPath: string): string[] {
+    const files: string[] = [];
+    const dirNode = this.#fileTree.get(dirPath);
+
+    if (!dirNode || dirNode.type !== "dir" || !dirNode.contents) return files;
+
+    for (const child of dirNode.contents) {
+      const childPath =
+        dirPath === "." ? child.name : `${dirPath}/${child.name}`;
+      if (child.type === "file") {
+        files.push(childPath);
+      } else {
+        files.push(...this.#getAllFilesInDirectory(childPath));
+      }
+    }
+
+    return files;
+  }
+
   async handleFileSelect(e: CustomEvent) {
-    const newSelection = e.detail;
-    this.#selectedFiles = new Set(newSelection);
+    const paths = e.detail as string[];
+    const newSelection = new Set<string>();
+
+    // Build file tree map if it's empty
+    if (this.#fileTree.size === 0) {
+      const fileTree = this.shadowRoot!.querySelector("codespin-file-tree");
+      if (fileTree) {
+        const files = (fileTree as FileTree).files;
+        if (files) {
+          this.#buildFileTreeMap(files, "", true);
+        }
+      }
+    }
+
+    // Process each selected path
+    for (const path of paths) {
+      const node = this.#fileTree.get(path);
+      if (node) {
+        if (node.type === "file") {
+          newSelection.add(path);
+        } else {
+          // For directories, add all contained files
+          const dirFiles = this.#getAllFilesInDirectory(path);
+          dirFiles.forEach((file) => newSelection.add(file));
+        }
+      }
+    }
+
+    this.#selectedFiles = newSelection;
     const selectedCount = this.#selectedFiles.size;
 
     const viewer = this.shadowRoot!.querySelector(
@@ -86,8 +146,9 @@ export class FileImporter extends HTMLElement {
       if (selectedCount === 0) {
         viewer.setContent("", undefined);
       } else {
-        viewer.setSelectedFiles(Array.from(this.#selectedFiles));
-        await this.loadSelectedFile(viewer.getCurrentFile()!, viewer);
+        const files = Array.from(this.#selectedFiles);
+        viewer.setSelectedFiles(files);
+        await this.loadSelectedFile(files[0], viewer);
       }
     }
 
@@ -118,6 +179,8 @@ export class FileImporter extends HTMLElement {
       const fileTree = this.shadowRoot!.querySelector("codespin-file-tree");
       if (fileTree) {
         await (fileTree as any).fetchFiles();
+        // Clear the file tree map so it will be rebuilt
+        this.#fileTree.clear();
       }
     } catch (error) {
       this.handleCancel();
@@ -131,13 +194,11 @@ export class FileImporter extends HTMLElement {
   handleSelect() {
     const selectedFiles = Array.from(this.#selectedFiles);
     if (selectedFiles.length === 0) return;
-
     this.dispatchEvent(new CustomEvent("select", { detail: selectedFiles }));
   }
 
   render() {
     const selectedCount = this.#selectedFiles.size;
-
     (
       this.shadowRoot!.querySelector(".file-tree-container") as HTMLElement
     )?.style.setProperty("--tree-width", `${this.#treeWidth}px`);
@@ -179,9 +240,7 @@ export class FileImporter extends HTMLElement {
                 </button>
               </div>
             </div>
-
             <div class="separator"></div>
-
             <div class="content-container">
               <codespin-file-content-viewer
                 class="viewer-container"
@@ -197,7 +256,6 @@ export class FileImporter extends HTMLElement {
               ></codespin-file-content-viewer>
             </div>
           </div>
-
           <div class="button-container">
             <button
               class="button button-cancel"
@@ -216,7 +274,6 @@ export class FileImporter extends HTMLElement {
         </div>
       </div>
     );
-
     applyDiff(this.shadowRoot!, vdom);
   }
 }
