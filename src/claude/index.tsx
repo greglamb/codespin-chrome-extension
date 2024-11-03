@@ -18,7 +18,9 @@ function addSyncButtonToDOM(preElement: HTMLElement) {
   );
 
   if (copyButton) {
-    const syncButton = webjsx.createNode(<codespin-claude-sync-button />);
+    const syncButton = webjsx.createNode(
+      <codespin-claude-sync-button style="float: left" />
+    );
     copyButton.parentElement?.insertBefore(syncButton, copyButton);
   }
 }
