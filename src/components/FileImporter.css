@@ -97,6 +97,7 @@ codespin-file-tree {
   right: 16px;
   display: flex;
   gap: 8px;
+  margin-right: 24px;
 }
 
 .button {
