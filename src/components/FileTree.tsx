@@ -29,6 +29,7 @@ export class FileTree extends HTMLElement {
     this.#loading = true;
     this.#error = null;
     this.render();
+
     try {
       const response = await getFiles(true);
       if (response?.success) {
@@ -48,8 +49,7 @@ export class FileTree extends HTMLElement {
     return this.#files;
   }
 
-  handleDirClick(e: MouseEvent, path: string) {
-    e.stopPropagation();
+  toggleDirExpansion(path: string) {
     if (this.#expandedNodes.has(path)) {
       this.#expandedNodes.delete(path);
     } else {
@@ -58,16 +58,53 @@ export class FileTree extends HTMLElement {
     this.render();
   }
 
-  handleSelect(e: MouseEvent, path: string, node: FileSystemNode) {
+  handleCaretClick(e: MouseEvent, path: string) {
+    e.stopPropagation();
+    
+    const hasModifier = e.ctrlKey || e.metaKey;
+    if (hasModifier) {
+      this.toggleSelection(path);
+    } else {
+      this.toggleDirExpansion(path);
+    }
+  }
+
+  handleDirNameClick(e: MouseEvent, path: string, node: FileSystemNode) {
+    e.stopPropagation();
+    
+    const hasModifier = e.ctrlKey || e.metaKey;
+    if (hasModifier) {
+      this.toggleSelection(path);
+    } else {
+      // Clear other selections and select this one
+      this.#selectedFiles.clear();
+      this.#selectedFiles.add(path);
+      this.toggleDirExpansion(path);
+      this.notifySelectionChange();
+    }
+  }
+
+  toggleSelection(path: string) {
+    const prevSelection = new Set(this.#selectedFiles);
+    
+    if (this.#selectedFiles.has(path)) {
+      this.#selectedFiles.delete(path);
+    } else {
+      this.#selectedFiles.add(path);
+    }
+
+    this.notifySelectionChange(prevSelection);
+    this.render();
+  }
+
+  handleFileSelect(e: MouseEvent, path: string) {
     e.stopPropagation();
     const prevSelection = new Set(this.#selectedFiles);
 
     if (!e.ctrlKey && !e.metaKey) {
-      // Single click without Ctrl/Cmd - clear selection and select only this item
       this.#selectedFiles.clear();
       this.#selectedFiles.add(path);
     } else {
-      // Ctrl/Cmd click - toggle selection
       if (this.#selectedFiles.has(path)) {
         this.#selectedFiles.delete(path);
       } else {
@@ -75,31 +112,33 @@ export class FileTree extends HTMLElement {
       }
     }
 
-    // Only dispatch if selection actually changed
-    const newSelection = Array.from(this.#selectedFiles);
-    const prevArray = Array.from(prevSelection);
-    if (
-      newSelection.length !== prevArray.length ||
-      !newSelection.every((file) => prevSelection.has(file))
-    ) {
-      this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
-    }
-
+    this.notifySelectionChange(prevSelection);
     this.render();
   }
 
+  notifySelectionChange(prevSelection?: Set<string>) {
+    const newSelection = Array.from(this.#selectedFiles);
+    if (prevSelection) {
+      const prevArray = Array.from(prevSelection);
+      if (
+        newSelection.length === prevArray.length &&
+        newSelection.every((file) => prevSelection.has(file))
+      ) {
+        return; // No change in selection
+      }
+    }
+    this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
+  }
+
   sortContents(contents: FileSystemNode[]): FileSystemNode[] {
-    // Separate directories and files
     const directories = contents.filter((node) => node.type !== "file");
     const files = contents.filter((node) => node.type === "file");
-
-    // Sort directories and files separately by name
+    
     const sortedDirectories = directories.sort((a, b) =>
       a.name.localeCompare(b.name)
     );
     const sortedFiles = files.sort((a, b) => a.name.localeCompare(b.name));
-
-    // Return concatenated sorted arrays with directories first
+    
     return [...sortedDirectories, ...sortedFiles];
   }
 
@@ -112,7 +151,7 @@ export class FileTree extends HTMLElement {
       return (
         <div
           class={`file-item ${isSelected ? "selected" : ""}`}
-          onclick={(e) => this.handleSelect(e, fullPath, node)}
+          onclick={(e) => this.handleFileSelect(e, fullPath)}
         >
           <span>📄</span>
           <span>{node.name}</span>
@@ -129,12 +168,20 @@ export class FileTree extends HTMLElement {
           }`}
           onclick={(e) => {
             if (!isRoot) {
-              this.handleSelect(e, fullPath, node);
-              this.handleDirClick(e, fullPath);
+              this.handleDirNameClick(e, fullPath, node);
             }
           }}
         >
-          {!isRoot && <span>{isExpanded ? "▾" : "▸"}</span>}
+          {!isRoot && (
+            <span 
+              onclick={(e) => {
+                e.stopPropagation();
+                this.handleCaretClick(e, fullPath);
+              }}
+            >
+              {isExpanded ? "▾" : "▸"}
+            </span>
+          )}
           <span>📁</span>
           <span>{isRoot ? getRootDirectoryName() : node.name}</span>
         </div>
