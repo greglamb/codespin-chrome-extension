@@ -1,7 +1,5 @@
 .sync-container {
   all: initial;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    Liberation Mono, Courier New, monospace;
 }
 
 .sync-button {
@@ -11,10 +9,10 @@
   display: flex;
   font-size: 12px;
   gap: 0.25rem;
-  margin-top: 1px;
   color: #e6e6e6;
   background: #20232a;
   margin-right: 4px;
+  padding: 2px 8px 3px 4px;
 }
 
 .dialog {
