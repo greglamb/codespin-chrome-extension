@@ -36,6 +36,26 @@ export class FileImporter extends HTMLElement {
     document.removeEventListener("mouseup", this.#handleMouseUp);
   }
 
+  show() {
+    const fileTree = this.shadowRoot!.querySelector(
+      "codespin-file-tree"
+    ) as FileTree;
+    if (fileTree) {
+      // Get current state before refresh
+      const selectedFiles = fileTree.getSelectedFiles();
+      const expandedNodes = fileTree.getExpandedNodes();
+
+      // Refresh and restore state
+      fileTree.fetchFiles().then(() => {
+        // Small delay to ensure tree is properly loaded
+        setTimeout(() => {
+          fileTree.restoreState(selectedFiles, expandedNodes);
+        }, 50);
+      });
+    }
+    this.#fileTree.clear(); // Clear cache to force rebuild
+  }
+
   #handleMouseMove = (e: MouseEvent) => {
     if (!this.#isDragging) return;
     const deltaX = e.clientX - this.#dragStartX;
@@ -79,7 +99,6 @@ export class FileImporter extends HTMLElement {
   ) {
     const fullPath = isRoot ? "." : path ? `${path}/${node.name}` : node.name;
     this.#fileTree.set(fullPath, node);
-
     if (node.type === "dir" && node.contents) {
       for (const child of node.contents) {
         this.#buildFileTreeMap(child, fullPath);
@@ -90,9 +109,7 @@ export class FileImporter extends HTMLElement {
   #getAllFilesInDirectory(dirPath: string): string[] {
     const files: string[] = [];
     const dirNode = this.#fileTree.get(dirPath);
-
     if (!dirNode || dirNode.type !== "dir" || !dirNode.contents) return files;
-
     for (const child of dirNode.contents) {
       const childPath =
         dirPath === "." ? child.name : `${dirPath}/${child.name}`;
@@ -102,7 +119,6 @@ export class FileImporter extends HTMLElement {
         files.push(...this.#getAllFilesInDirectory(childPath));
       }
     }
-
     return files;
   }
 
@@ -137,7 +153,6 @@ export class FileImporter extends HTMLElement {
 
     this.#selectedFiles = newSelection;
     const selectedCount = this.#selectedFiles.size;
-
     const viewer = this.shadowRoot!.querySelector(
       "codespin-file-content-viewer"
     ) as FileContentViewer;
@@ -175,11 +190,9 @@ export class FileImporter extends HTMLElement {
     clearFileSystemCache();
     try {
       await getDirectoryHandle();
-      // Refresh the file tree after new directory is selected
       const fileTree = this.shadowRoot!.querySelector("codespin-file-tree");
       if (fileTree) {
         await (fileTree as any).fetchFiles();
-        // Clear the file tree map so it will be rebuilt
         this.#fileTree.clear();
       }
     } catch (error) {
@@ -199,6 +212,7 @@ export class FileImporter extends HTMLElement {
 
   render() {
     const selectedCount = this.#selectedFiles.size;
+
     (
       this.shadowRoot!.querySelector(".file-tree-container") as HTMLElement
     )?.style.setProperty("--tree-width", `${this.#treeWidth}px`);
@@ -274,6 +288,7 @@ export class FileImporter extends HTMLElement {
         </div>
       </div>
     );
+
     applyDiff(this.shadowRoot!, vdom);
   }
 }

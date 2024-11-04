@@ -23,14 +23,12 @@ export class ClaudeInboundButton extends HTMLElement {
   }
 
   disconnectedCallback() {
-    // Clean up the dialog when the component is removed
     this.#dialog?.remove();
     this.#dialog = null;
   }
 
   async initializeDialog() {
     if (this.#dialog) return;
-
     this.#dialog = webjsx.createNode(
       <dialog class="dialog">
         <codespin-file-importer
@@ -44,14 +42,12 @@ export class ClaudeInboundButton extends HTMLElement {
         />
       </dialog>
     ) as HTMLDialogElement;
-
     document.body.appendChild(this.#dialog);
   }
 
   async handleFileSelection(selectedFiles: string[]) {
     try {
       const prompt = await fromFileSelection(selectedFiles);
-
       const editor = document.querySelector(
         '.ProseMirror[contenteditable="true"]'
       );
@@ -74,12 +70,15 @@ export class ClaudeInboundButton extends HTMLElement {
         <codespin-icon></codespin-icon>
       </div>
     );
-
     applyDiff(this.shadowRoot!, vdom);
   }
 
   async handleClick() {
     await this.initializeDialog();
+    const importer = this.#dialog?.querySelector("codespin-file-importer");
+    if (importer) {
+      (importer as any).show();
+    }
     this.#dialog?.showModal();
   }
 }

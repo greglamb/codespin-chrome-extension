@@ -34,6 +34,7 @@ export class FileTree extends HTMLElement {
       const response = await getFiles(true);
       if (response?.success) {
         this.#files = response.result as FileSystemNode;
+        this.#error = null; // Explicitly clear error on success
       } else {
         this.#error = "Failed to load files";
       }
@@ -49,6 +50,58 @@ export class FileTree extends HTMLElement {
     return this.#files;
   }
 
+  getSelectedFiles(): string[] {
+    return Array.from(this.#selectedFiles);
+  }
+
+  getExpandedNodes(): string[] {
+    return Array.from(this.#expandedNodes);
+  }
+
+  restoreState(selectedFiles: string[], expandedNodes: string[]) {
+    // Only clear if we're actually restoring something
+    if (selectedFiles.length > 0) {
+      this.#selectedFiles.clear();
+    }
+    if (expandedNodes.length > 0) {
+      this.#expandedNodes.clear();
+    }
+
+    // Helper function to check if path exists in current tree
+    const pathExists = (path: string): boolean => {
+      if (path === ".") return true;
+      let current = this.#files;
+      const parts = path.split("/").filter((p) => p !== ".");
+
+      for (const part of parts) {
+        if (!current || current.type !== "dir") return false;
+        const found = current.contents?.find((node) => node.name === part);
+        if (!found) return false;
+        current = found;
+      }
+      return true;
+    };
+
+    // Restore only existing paths
+    for (const file of selectedFiles) {
+      if (pathExists(file)) {
+        this.#selectedFiles.add(file);
+      }
+    }
+
+    for (const node of expandedNodes) {
+      if (pathExists(node)) {
+        this.#expandedNodes.add(node);
+      }
+    }
+
+    // Only notify if we actually restored selected files
+    if (selectedFiles.length > 0) {
+      this.notifySelectionChange();
+    }
+    this.render();
+  }
+
   toggleDirExpansion(path: string) {
     if (this.#expandedNodes.has(path)) {
       this.#expandedNodes.delete(path);
@@ -60,7 +113,6 @@ export class FileTree extends HTMLElement {
 
   handleCaretClick(e: MouseEvent, path: string) {
     e.stopPropagation();
-    
     const hasModifier = e.ctrlKey || e.metaKey;
     if (hasModifier) {
       this.toggleSelection(path);
@@ -71,7 +123,6 @@ export class FileTree extends HTMLElement {
 
   handleDirNameClick(e: MouseEvent, path: string, node: FileSystemNode) {
     e.stopPropagation();
-    
     const hasModifier = e.ctrlKey || e.metaKey;
     if (hasModifier) {
       this.toggleSelection(path);
@@ -86,13 +137,11 @@ export class FileTree extends HTMLElement {
 
   toggleSelection(path: string) {
     const prevSelection = new Set(this.#selectedFiles);
-    
     if (this.#selectedFiles.has(path)) {
       this.#selectedFiles.delete(path);
     } else {
       this.#selectedFiles.add(path);
     }
-
     this.notifySelectionChange(prevSelection);
     this.render();
   }
@@ -100,7 +149,6 @@ export class FileTree extends HTMLElement {
   handleFileSelect(e: MouseEvent, path: string) {
     e.stopPropagation();
     const prevSelection = new Set(this.#selectedFiles);
-
     if (!e.ctrlKey && !e.metaKey) {
       this.#selectedFiles.clear();
       this.#selectedFiles.add(path);
@@ -111,7 +159,6 @@ export class FileTree extends HTMLElement {
         this.#selectedFiles.add(path);
       }
     }
-
     this.notifySelectionChange(prevSelection);
     this.render();
   }
@@ -130,15 +177,20 @@ export class FileTree extends HTMLElement {
     this.dispatchEvent(new CustomEvent("select", { detail: newSelection }));
   }
 
+  handleRefresh = async () => {
+    const selectedFiles = this.getSelectedFiles();
+    const expandedNodes = this.getExpandedNodes();
+    await this.fetchFiles();
+    this.restoreState(selectedFiles, expandedNodes);
+  };
+
   sortContents(contents: FileSystemNode[]): FileSystemNode[] {
     const directories = contents.filter((node) => node.type !== "file");
     const files = contents.filter((node) => node.type === "file");
-    
     const sortedDirectories = directories.sort((a, b) =>
       a.name.localeCompare(b.name)
     );
     const sortedFiles = files.sort((a, b) => a.name.localeCompare(b.name));
-    
     return [...sortedDirectories, ...sortedFiles];
   }
 
@@ -173,7 +225,7 @@ export class FileTree extends HTMLElement {
           }}
         >
           {!isRoot && (
-            <span 
+            <span
               onclick={(e) => {
                 e.stopPropagation();
                 this.handleCaretClick(e, fullPath);
@@ -184,6 +236,18 @@ export class FileTree extends HTMLElement {
           )}
           <span>📁</span>
           <span>{isRoot ? getRootDirectoryName() : node.name}</span>
+          {isRoot && (
+            <button
+              class="refresh-button"
+              onclick={(e) => {
+                e.stopPropagation();
+                this.handleRefresh();
+              }}
+              title="Refresh file tree"
+            >
+              🔄
+            </button>
+          )}
         </div>
         {isExpanded && node.contents && (
           <div class={`dir-contents ${isRoot ? "root" : ""}`}>
@@ -200,15 +264,13 @@ export class FileTree extends HTMLElement {
     const vdom = (
       <div class="tree-container">
         {this.#loading && <div class="message">Loading...</div>}
-        {this.#error && <div class="error-message">{this.#error}</div>}
+        {this.#error && !this.#files && (
+          <div class="error-message">{this.#error}</div>
+        )}
         {this.#files && this.renderNode(this.#files, "", true)}
       </div>
     );
     applyDiff(this.shadowRoot!, vdom);
-  }
-
-  getSelectedFiles(): string[] {
-    return Array.from(this.#selectedFiles);
   }
 }
 
