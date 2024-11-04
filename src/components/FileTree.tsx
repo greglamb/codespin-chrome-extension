@@ -13,6 +13,7 @@ export class FileTree extends HTMLElement {
   #files: FileSystemNode | null = null;
   #loading: boolean = false;
   #error: string | null = null;
+  #initialized: boolean = false;
 
   constructor() {
     super();
@@ -28,20 +29,30 @@ export class FileTree extends HTMLElement {
   async fetchFiles() {
     this.#loading = true;
     this.#error = null;
+
+    if (this.#initialized) {
+      // Clear existing files when refreshing
+      this.#files = null;
+    }
+
     this.render();
 
     try {
       const response = await getFiles(true);
       if (response?.success) {
         this.#files = response.result as FileSystemNode;
-        this.#error = null; // Explicitly clear error on success
+        this.#error = null;
       } else {
         this.#error = "Failed to load files";
       }
     } catch (err) {
-      this.#error = "Error loading files";
+      // Only set error if we've initialized (user has interacted)
+      if (this.#initialized) {
+        this.#error = "Error loading files";
+      }
     } finally {
       this.#loading = false;
+      this.#initialized = true;
       this.render();
     }
   }
@@ -263,11 +274,17 @@ export class FileTree extends HTMLElement {
   render() {
     const vdom = (
       <div class="tree-container">
-        {this.#loading && <div class="message">Loading...</div>}
-        {this.#error && !this.#files && (
-          <div class="error-message">{this.#error}</div>
-        )}
-        {this.#files && this.renderNode(this.#files, "", true)}
+        {this.#loading && !this.#files && <div class="message">Loading...</div>}
+        {this.#error && <div class="error-message">{this.#error}</div>}
+        {!this.#loading &&
+          !this.#error &&
+          !this.#files &&
+          !this.#initialized && (
+            <div class="message">Select a directory to begin</div>
+          )}
+        {this.#files &&
+          !this.#loading &&
+          this.renderNode(this.#files, "", true)}
       </div>
     );
     applyDiff(this.shadowRoot!, vdom);

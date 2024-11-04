@@ -29,7 +29,6 @@ export class FileContentViewer extends HTMLElement {
       scss: "scss",
       sass: "scss",
       less: "less",
-
       // JavaScript family
       js: "javascript",
       jsx: "javascript",
@@ -37,7 +36,6 @@ export class FileContentViewer extends HTMLElement {
       tsx: "typescript",
       mjs: "javascript",
       cjs: "javascript",
-
       // Backend
       py: "python",
       rb: "ruby",
@@ -48,7 +46,6 @@ export class FileContentViewer extends HTMLElement {
       go: "go",
       rs: "rust",
       swift: "swift",
-
       // Shell/Config
       sh: "bash",
       bash: "bash",
@@ -59,24 +56,20 @@ export class FileContentViewer extends HTMLElement {
       json: "json",
       toml: "toml",
       ini: "ini",
-
       // Databases
       sql: "sql",
       psql: "pgsql",
       mysql: "sql",
-
       // Markup
       md: "markdown",
       mdx: "markdown",
       tex: "latex",
-
       // Systems
       c: "c",
       cpp: "cpp",
       cc: "cpp",
       h: "c",
       hpp: "cpp",
-
       // Others
       dockerfile: "dockerfile",
       r: "r",
@@ -97,18 +90,15 @@ export class FileContentViewer extends HTMLElement {
       lisp: "lisp",
       scm: "scheme",
     };
-
     return ext ? languageMap[ext] : undefined;
   }
 
   setContent(content: string, filename: string | undefined) {
     this.#content = content;
-
     if (content && filename) {
       try {
         // Try auto-detection first
         let highlighted = hljs.highlightAuto(content);
-
         // If we have a specific language mapping, try that instead
         const detectedLanguage = this.detectLanguage(filename);
         if (detectedLanguage) {
@@ -122,7 +112,6 @@ export class FileContentViewer extends HTMLElement {
             );
           }
         }
-
         this.#highlightedContent = highlighted.value;
       } catch (error) {
         console.warn("Failed to highlight code:", error);
@@ -131,18 +120,25 @@ export class FileContentViewer extends HTMLElement {
     } else {
       this.#highlightedContent = content;
     }
-
     this.render();
   }
 
-  setSelectedFiles(files: string[]) {
+  setSelectedFiles(files: string[], currentFile?: string) {
     this.#selectedFiles = files;
-    this.#currentFile = files[0];
+    this.#currentFile = currentFile || files[0];
     this.render();
   }
 
   getCurrentFile() {
     return this.#currentFile;
+  }
+
+  clear() {
+    this.#content = "";
+    this.#highlightedContent = "";
+    this.#selectedFiles = [];
+    this.#currentFile = undefined;
+    this.render();
   }
 
   handleFileChange(e: Event) {
@@ -178,7 +174,6 @@ export class FileContentViewer extends HTMLElement {
         </pre>
       </div>
     );
-
     applyDiff(this.shadowRoot!, vdom);
   }
 }
