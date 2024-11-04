@@ -256,7 +256,7 @@ export class FileTree extends HTMLElement {
               }}
               title="Refresh file tree"
             >
-              🔄
+              <codespin-sync-icon />
             </button>
           )}
         </div>
