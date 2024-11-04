@@ -13,6 +13,7 @@
   background: #20232a;
   margin-right: 4px;
   padding: 5px 8px 4px 4px;
+  cursor: pointer;
 }
 
 .dialog {
