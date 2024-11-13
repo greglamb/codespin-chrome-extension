@@ -1,3 +1,4 @@
+// File path:./src/chatGPT/index.tsx
 import * as webjsx from "../libs/webjsx/index.js";
 
 import "./components/ChatGPTInboundButton.js";
@@ -16,6 +17,11 @@ import "../components/FileEdits.js";
  * @param preElement The <pre> element to which the sync button will be attached.
  */
 function addSyncButtonToDOM(preElement: HTMLElement) {
+  const previousElement = preElement.previousElementSibling;
+  if (!previousElement?.textContent?.startsWith("File path:")) {
+    return;
+  }
+
   const copyButtonContainer = preElement.querySelector(
     "div > div > div > span > button"
   )?.parentElement?.parentElement;
@@ -47,19 +53,19 @@ async function attachSyncButton() {
 // This needs to run only once because the textbox is created only once.
 async function attachInboundButton() {
   if (!document.querySelector("codespin-chatgpt-inbound-button")) {
-    const attachFilesButton = document.querySelector(
-      'button[aria-label="Attach files"]'
+    const searchTheWebButton = document.querySelector(
+      'button[aria-label="Search the web"]'
     );
 
     // Ensure the button is found before proceeding
-    if (attachFilesButton) {
+    if (searchTheWebButton) {
       // Create a new custom element
       const inboundButton = webjsx.createNode(
         <codespin-chatgpt-inbound-button></codespin-chatgpt-inbound-button>
       );
 
       // Insert the custom element right after the button
-      attachFilesButton.parentElement?.parentElement?.parentElement?.parentElement?.parentElement!.insertAdjacentElement(
+      searchTheWebButton.parentElement?.parentElement?.insertAdjacentElement(
         "afterend",
         inboundButton as Element
       );

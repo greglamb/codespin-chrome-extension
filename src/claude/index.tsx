@@ -1,5 +1,4 @@
 import * as webjsx from "../libs/webjsx/index.js";
-
 import "./components/ClaudeInboundButton.js";
 import "./components/ClaudeSyncButton.js";
 import "../components/FileImporter.js";
@@ -12,6 +11,11 @@ import "../components/ChangeTree.js";
 import "../components/FileEdits.js";
 
 function addSyncButtonToDOM(preElement: HTMLElement) {
+  const previousElement = preElement.previousElementSibling;
+  if (!previousElement?.textContent?.startsWith("File path:")) {
+    return;
+  }
+
   // Find button with "Copy" text inside the pre element
   const copyButton = Array.from(preElement.querySelectorAll("button")).find(
     (button) => button.textContent?.trim() === "Copy"

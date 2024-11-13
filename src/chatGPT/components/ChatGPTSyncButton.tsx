@@ -1,3 +1,4 @@
+// File path:./src/chatGPT/components/ChatGPTSyncButton.tsx
 import { getCSS } from "../../api/loadCSS.js";
 import * as webjsx from "../../libs/webjsx/index.js";
 import { applyDiff } from "../../libs/webjsx/index.js";
@@ -58,13 +59,12 @@ export class ChatGPTSyncButton extends HTMLElement {
     ).host.closest('[data-codespin-attached="true"]');
 
     if (codeSpinElement) {
-      let previousElement = codeSpinElement.previousElementSibling;
-      while (previousElement) {
-        const textContent = previousElement.textContent;
-        if (textContent && textContent.startsWith("File path:")) {
-          return textContent.replace("File path:", "").trim();
-        }
-        previousElement = previousElement.previousElementSibling;
+      const filePathElement = codeSpinElement.previousElementSibling;
+      if (
+        filePathElement &&
+        filePathElement.textContent?.startsWith("File path:")
+      ) {
+        return filePathElement.textContent.replace("File path:", "").trim();
       }
     }
     return null;
@@ -72,33 +72,28 @@ export class ChatGPTSyncButton extends HTMLElement {
 
   collectSyncButtonFiles(): FileChange[] {
     const changesMap = new Map<string, string>();
-
     const codeSpinElements = document.querySelectorAll(
       '[data-codespin-attached="true"]'
     );
 
     codeSpinElements.forEach((element) => {
-      let filepath: string | undefined;
-      let previousElement = element.previousElementSibling;
+      const filePathElement = element.previousElementSibling;
+      if (
+        filePathElement &&
+        filePathElement.textContent?.startsWith("File path:")
+      ) {
+        const filepath = filePathElement.textContent
+          .replace("File path:", "")
+          .trim();
+        const codeElement = element.querySelector("code");
+        const sourceCode = codeElement ? codeElement.innerText : "";
 
-      while (previousElement) {
-        const textContent = previousElement.textContent;
-        if (textContent && textContent.startsWith("File path:")) {
-          filepath = textContent.replace("File path:", "").trim();
-          break;
+        if (filepath.startsWith("./")) {
+          changesMap.set(filepath, sourceCode);
         }
-        previousElement = previousElement.previousElementSibling;
-      }
-
-      const codeElement = element.querySelector("code");
-      const sourceCode = codeElement ? codeElement.innerText : "";
-
-      if (filepath?.startsWith("./")) {
-        changesMap.set(filepath, sourceCode); // Replace if the filepath exists
       }
     });
 
-    // Convert the map to an array of FileChange objects
     return Array.from(changesMap, ([path, content]) => ({ path, content }));
   }
 
