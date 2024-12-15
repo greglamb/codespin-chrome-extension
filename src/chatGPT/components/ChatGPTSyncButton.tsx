@@ -1,7 +1,7 @@
 // File path:./src/chatGPT/components/ChatGPTSyncButton.tsx
 import { getCSS } from "../../api/loadCSS.js";
-import * as webjsx from "../../libs/webjsx/index.js";
-import { applyDiff } from "../../libs/webjsx/index.js";
+import * as webjsx from "../../libs/webjsx/factory.js";
+import { applyDiff, createNode } from "../../libs/webjsx/index.js";
 
 const styleSheet = await getCSS("./ChatGPTSyncButton.css", import.meta.url);
 
@@ -38,7 +38,7 @@ export class ChatGPTSyncButton extends HTMLElement {
 
   async initializeDialog() {
     if (this.#dialog) return;
-    this.#dialog = webjsx.createNode(
+    this.#dialog = createNode(
       <dialog class="dialog">
         <codespin-file-writer
           onwritten={() => {

@@ -1,4 +1,4 @@
-import * as webjsx from "../libs/webjsx/index.js";
+import * as webjsx from "../libs/webjsx/factory.js";
 import { applyDiff } from "../libs/webjsx/index.js";
 import hljs from "../libs/highlight.js/core.js";
 import { getCSS } from "../api/loadCSS.js";

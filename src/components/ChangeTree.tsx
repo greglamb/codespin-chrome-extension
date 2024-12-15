@@ -1,4 +1,4 @@
-import * as webjsx from "../libs/webjsx/index.js";
+import * as webjsx from "../libs/webjsx/factory.js";
 import { applyDiff } from "../libs/webjsx/index.js";
 import { getCSS } from "../api/loadCSS.js";
 import { getRootDirectoryName } from "../api/fs/getDirectoryHandle.js";

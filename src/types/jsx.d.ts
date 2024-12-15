@@ -1,10 +1,9 @@
-import "../libs/webjsx/index.js";
 import { VNode } from "../libs/webjsx/index.js";
-import { ChangeTree } from "./ChangeTree.js";
-import { FileContentViewer } from "./FileContentViewer.js";
-import { FileEdits } from "./FileEdits.js";
+import { ChangeTree } from "../components/ChangeTree.js";
+import { FileContentViewer } from "../components/FileContentViewer.js";
+import { FileEdits } from "../components/FileEdits.js";
 
-declare module "../libs/webjsx/index.js" {
+declare global {
   namespace JSX {
     interface IntrinsicElements {
       "codespin-sync-icon": {};
@@ -47,6 +46,10 @@ declare module "../libs/webjsx/index.js" {
         onwritten?: (event: Event) => void;
         oncancel?: (event: Event) => void;
       };
+      "codespin-chatgpt-sync-button": {};
+      "codespin-chatgpt-inbound-button": {};
+      "codespin-claude-sync-button": { style?: string };
+      "codespin-claude-inbound-button": {};
     }
   }
 }

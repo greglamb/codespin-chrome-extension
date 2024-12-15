@@ -1,5 +1,5 @@
 // File path:./src/chatGPT/index.tsx
-import * as webjsx from "../libs/webjsx/index.js";
+import * as webjsx from "../libs/webjsx/factory.js";
 
 import "./components/ChatGPTInboundButton.js";
 import "./components/ChatGPTSyncButton.js";
@@ -11,6 +11,7 @@ import "../components/icons/SyncIcon.js";
 import "../components/FileWriter.js";
 import "../components/ChangeTree.js";
 import "../components/FileEdits.js";
+import { createNode } from "../libs/webjsx/createNode.js";
 
 /**
  * Attaches a sync button (<codespin-chatgpt-sync-button>) to a specific <pre> element.
@@ -27,7 +28,7 @@ function addSyncButtonToDOM(preElement: HTMLElement) {
   )?.parentElement?.parentElement;
 
   if (copyButtonContainer) {
-    const syncButton = webjsx.createNode(<codespin-chatgpt-sync-button />);
+    const syncButton = createNode(<codespin-chatgpt-sync-button />);
     copyButtonContainer.parentElement?.insertBefore(
       syncButton,
       copyButtonContainer
@@ -60,7 +61,7 @@ async function attachInboundButton() {
     // Ensure the button is found before proceeding
     if (searchTheWebButton) {
       // Create a new custom element
-      const inboundButton = webjsx.createNode(
+      const inboundButton = createNode(
         <codespin-chatgpt-inbound-button></codespin-chatgpt-inbound-button>
       );
 
