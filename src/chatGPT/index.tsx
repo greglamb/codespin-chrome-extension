@@ -54,19 +54,24 @@ async function attachSyncButton() {
 // This needs to run only once because the textbox is created only once.
 async function attachInboundButton() {
   if (!document.querySelector("codespin-chatgpt-inbound-button")) {
-    const searchTheWebButton = document.querySelector(
-      'button[aria-label="Search the web"]'
-    );
+    const composerBackground = document.getElementById("composer-background");
+    if (!composerBackground) return;
+
+    const buttons = composerBackground.querySelectorAll("button");
+    const buttonsArray = Array.from(buttons);
+
+    // Get the second to last button
+    const targetButton = buttonsArray[buttonsArray.length - 2];
 
     // Ensure the button is found before proceeding
-    if (searchTheWebButton) {
+    if (targetButton) {
       // Create a new custom element
       const inboundButton = createNode(
         <codespin-chatgpt-inbound-button></codespin-chatgpt-inbound-button>
       );
 
       // Insert the custom element right after the button
-      searchTheWebButton.parentElement?.parentElement?.insertAdjacentElement(
+      targetButton.parentElement?.parentElement?.insertAdjacentElement(
         "afterend",
         inboundButton as Element
       );
