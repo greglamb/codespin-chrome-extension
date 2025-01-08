@@ -10,6 +10,7 @@ export class FileContentViewer extends HTMLElement {
   #highlightedContent: string = "";
   #selectedFiles: string[] = [];
   #currentFile: string | undefined;
+  #lineCount: number = 0;
 
   constructor() {
     super();
@@ -95,6 +96,7 @@ export class FileContentViewer extends HTMLElement {
 
   setContent(content: string, filename: string | undefined) {
     this.#content = content;
+    this.#lineCount = content.split('\n').length;
     if (content && filename) {
       try {
         // Try auto-detection first
@@ -164,14 +166,21 @@ export class FileContentViewer extends HTMLElement {
             </select>
           </div>
         )}
-        <pre class="code-container">
-          <code
-            class="code-block hljs"
-            innerHTML={
-              this.#highlightedContent || "Select a file to view its contents"
-            }
-          />
-        </pre>
+        <div class="code-container">
+          <div class="line-numbers">
+            {Array.from({ length: this.#lineCount }, (_, i) => (
+              <div class="line-number">{i + 1}</div>
+            ))}
+          </div>
+          <pre>
+            <code
+              class="code-block hljs"
+              innerHTML={
+                this.#highlightedContent || "Select a file to view its contents"
+              }
+            />
+          </pre>
+        </div>
       </div>
     );
     applyDiff(this.shadowRoot!, vdom);

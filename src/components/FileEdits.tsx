@@ -17,6 +17,8 @@ export class FileEdits extends HTMLElement {
   #viewMode: ViewMode = "content";
   #currentFilename: string = "";
   #loading: boolean = false;
+  #contentLineCount: number = 0;
+  #diffLineCount: number = 0;
 
   constructor() {
     super();
@@ -54,6 +56,8 @@ export class FileEdits extends HTMLElement {
       "Original",
       "Modified"
     );
+
+    this.#diffLineCount = patch.split('\n').length;
 
     try {
       this.#highlightedDiff = hljs.highlight(patch, { language: "diff" }).value;
@@ -96,6 +100,7 @@ export class FileEdits extends HTMLElement {
   async setContent(content: string, filename: string) {
     this.#content = content;
     this.#currentFilename = filename;
+    this.#contentLineCount = content.split('\n').length;
 
     try {
       const detectedLanguage = this.detectLanguage(filename);
@@ -143,16 +148,26 @@ export class FileEdits extends HTMLElement {
         {this.#loading ? (
           <div class="loading">Loading...</div>
         ) : (
-          <pre class="code-container">
-            <code
-              class="code-block hljs"
-              innerHTML={
-                this.#viewMode === "content"
-                  ? this.#highlightedContent
-                  : this.#highlightedDiff
-              }
-            />
-          </pre>
+          <div class="code-container">
+            <div class="line-numbers">
+              {Array.from(
+                { length: this.#viewMode === "content" ? this.#contentLineCount : this.#diffLineCount },
+                (_, i) => (
+                  <div class="line-number">{i + 1}</div>
+                )
+              )}
+            </div>
+            <pre>
+              <code
+                class="code-block hljs"
+                innerHTML={
+                  this.#viewMode === "content"
+                    ? this.#highlightedContent
+                    : this.#highlightedDiff
+                }
+              />
+            </pre>
+          </div>
         )}
       </div>
     );

@@ -11,6 +11,8 @@
   margin: 0;
   height: 100%;
   overflow: auto;
+  display: flex;
+  flex-direction: row;
 }
 
 .code-block {
@@ -21,6 +23,28 @@
   line-height: 1.4;
   tab-size: 2;
   white-space: pre;
+}
+
+.line-numbers {
+  padding: 16px 8px;
+  background: #252525;
+  border-right: 1px solid #333;
+  color: #858585;
+  font-family: "Menlo", "Monaco", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: right;
+  user-select: none;
+}
+
+.line-number {
+  padding-right: 8px;
+  min-width: 2em;
+}
+
+pre {
+  margin: 0;
+  flex: 1;
 }
 
 .file-selector {
