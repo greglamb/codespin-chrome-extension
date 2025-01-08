@@ -18,12 +18,7 @@ export class FileEdits extends HTMLElement {
   #currentFilename: string = "";
   #loading: boolean = false;
   #contentLineCount: number = 0;
-  #diffLines: {
-    type: 'header' | 'add' | 'remove' | 'context';
-    oldNumber?: number;
-    newNumber?: number;
-    content: string;
-  }[] = [];
+  #diffLines: { type: 'header' | 'add' | 'remove' | 'context', number?: number }[] = [];
 
   constructor() {
     super();
@@ -59,64 +54,40 @@ export class FileEdits extends HTMLElement {
       this.#originalContent,
       this.#content,
       "Original",
-      "Modified"
+      "Modified",
+      {
+        context: Number.MAX_SAFE_INTEGER // Show all context lines
+      }
     );
 
     // Parse the diff to track line numbers
     const lines = patch.split('\n');
     this.#diffLines = [];
-    let oldStart = 0;
-    let newStart = 0;
-    let oldLine = 0;
-    let newLine = 0;
+    let currentLineNum = 0;
+    let inHeader = true;
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      if (line.startsWith('---') || line.startsWith('+++')) {
-        this.#diffLines.push({ type: 'header', content: line });
+    for (const line of lines) {
+      if (line.startsWith('\\ ')) {
+        // Show "No newline" messages with no line number
+        this.#diffLines.push({ type: 'header' });
         continue;
       }
-      
-      if (line.startsWith('@@')) {
-        const match = line.match(/@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
-        if (match) {
-          oldStart = parseInt(match[1], 10);
-          newStart = parseInt(match[2], 10);
-          oldLine = oldStart;
-          newLine = newStart;
-          this.#diffLines.push({ type: 'header', content: line });
+
+      if (inHeader || line.startsWith('@@')) {
+        if (line.startsWith('@@')) {
+          inHeader = false;
         }
-        continue;
-      }
-
-      if (line.startsWith('-')) {
-        this.#diffLines.push({
-          type: 'remove',
-          oldNumber: oldLine++,
-          content: line
-        });
-      } else if (line.startsWith('+')) {
-        this.#diffLines.push({
-          type: 'add',
-          newNumber: newLine++,
-          content: line
-        });
-      } else if (line.length > 0) {
-        this.#diffLines.push({
-          type: 'context',
-          oldNumber: oldLine++,
-          newNumber: newLine++,
-          content: line
-        });
+        this.#diffLines.push({ type: 'header' });
       } else {
-        // Empty lines in the diff should still maintain line numbers
-        this.#diffLines.push({
-          type: 'context',
-          oldNumber: oldLine++,
-          newNumber: newLine++,
-          content: line
-        });
+        if (line.startsWith('-')) {
+          this.#diffLines.push({ type: 'remove' });
+        } else if (line.startsWith('+')) {
+          currentLineNum++;
+          this.#diffLines.push({ type: 'add', number: currentLineNum });
+        } else if (line.length > 0) {
+          currentLineNum++;
+          this.#diffLines.push({ type: 'context', number: currentLineNum });
+        }
       }
     }
 
@@ -210,48 +181,34 @@ export class FileEdits extends HTMLElement {
           <div class="loading">Loading...</div>
         ) : (
           <div class="code-container">
-            {this.#viewMode === "content" ? (
-              <>
-                <div class="line-numbers">
-                  {Array.from({ length: this.#contentLineCount }, (_, i) => (
-                    <div class="line-number">{i + 1}</div>
-                  ))}
-                </div>
-                <pre>
-                  <code
-                    class="code-block hljs"
-                    innerHTML={this.#highlightedContent}
-                  />
-                </pre>
-              </>
-            ) : (
-              <>
-                <div class="line-numbers old">
-                  {this.#diffLines.map(line => (
-                    <div class={`line-number ${line.type}`}>
-                      {line.type === 'header' ? '' : line.oldNumber || ''}
-                    </div>
-                  ))}
-                </div>
-                <div class="line-numbers new">
-                  {this.#diffLines.map(line => (
-                    <div class={`line-number ${line.type}`}>
-                      {line.type === 'header' ? '' : line.newNumber || ''}
-                    </div>
-                  ))}
-                </div>
-                <pre>
-                  <code
-                    class="code-block hljs"
-                    innerHTML={this.#highlightedDiff}
-                  />
-                </pre>
-              </>
-            )}
+            <div class="line-numbers">
+              {this.#viewMode === "content" ? (
+                Array.from({ length: this.#contentLineCount }, (_, i) => (
+                  <div class="line-number">{i + 1}</div>
+                ))
+              ) : (
+                this.#diffLines.map(line => (
+                  <div class={`line-number ${line.type}`}>
+                    {line.type === 'header' || line.type === 'remove' ? '' : line.number}
+                  </div>
+                ))
+              )}
+            </div>
+            <pre>
+              <code
+                class="code-block hljs"
+                innerHTML={
+                  this.#viewMode === "content"
+                    ? this.#highlightedContent
+                    : this.#highlightedDiff
+                }
+              />
+            </pre>
           </div>
         )}
       </div>
     );
+
     applyDiff(this.shadowRoot!, vdom);
   }
 }
