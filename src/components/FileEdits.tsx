@@ -18,7 +18,7 @@ export class FileEdits extends HTMLElement {
   #currentFilename: string = "";
   #loading: boolean = false;
   #contentLineCount: number = 0;
-  #diffLineCount: number = 0;
+  #diffLines: { type: 'header' | 'add' | 'remove' | 'context', number?: number }[] = [];
 
   constructor() {
     super();
@@ -57,7 +57,27 @@ export class FileEdits extends HTMLElement {
       "Modified"
     );
 
-    this.#diffLineCount = patch.split('\n').length;
+    // Parse the diff to track line numbers
+    const lines = patch.split('\n');
+    this.#diffLines = [];
+    let originalLineNum = 0;
+    let modifiedLineNum = 0;
+
+    for (const line of lines) {
+      if (line.startsWith('---') || line.startsWith('+++') || line.startsWith('@@')) {
+        this.#diffLines.push({ type: 'header' });
+      } else if (line.startsWith('-')) {
+        originalLineNum++;
+        this.#diffLines.push({ type: 'remove', number: originalLineNum });
+      } else if (line.startsWith('+')) {
+        modifiedLineNum++;
+        this.#diffLines.push({ type: 'add', number: modifiedLineNum });
+      } else {
+        originalLineNum++;
+        modifiedLineNum++;
+        this.#diffLines.push({ type: 'context', number: modifiedLineNum });
+      }
+    }
 
     try {
       this.#highlightedDiff = hljs.highlight(patch, { language: "diff" }).value;
@@ -150,11 +170,16 @@ export class FileEdits extends HTMLElement {
         ) : (
           <div class="code-container">
             <div class="line-numbers">
-              {Array.from(
-                { length: this.#viewMode === "content" ? this.#contentLineCount : this.#diffLineCount },
-                (_, i) => (
+              {this.#viewMode === "content" ? (
+                Array.from({ length: this.#contentLineCount }, (_, i) => (
                   <div class="line-number">{i + 1}</div>
-                )
+                ))
+              ) : (
+                this.#diffLines.map(line => (
+                  <div class={`line-number ${line.type}`}>
+                    {line.type === 'header' ? '' : line.number}
+                  </div>
+                ))
               )}
             </div>
             <pre>

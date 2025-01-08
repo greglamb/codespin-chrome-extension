@@ -62,6 +62,25 @@
 .line-number {
   padding-right: 8px;
   min-width: 2em;
+  height: 1.4em;
+}
+
+.line-number.header {
+  color: #4b4b4b;
+}
+
+.line-number.remove {
+  color: #f14c4c;
+  background: rgba(255, 0, 0, 0.05);
+}
+
+.line-number.add {
+  color: #73c991;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.line-number.context {
+  color: #858585;
 }
 
 .code-block {
