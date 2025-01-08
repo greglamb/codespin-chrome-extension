@@ -57,16 +57,28 @@
   line-height: 1.4;
   text-align: right;
   user-select: none;
+  min-width: 3em;
+}
+
+.line-numbers.old {
+  border-right: 1px solid #444;
+}
+
+.line-numbers.new {
+  border-right: 1px solid #333;
 }
 
 .line-number {
   padding-right: 8px;
-  min-width: 2em;
   height: 1.4em;
+  white-space: pre;
 }
 
 .line-number.header {
   color: #4b4b4b;
+  font-style: italic;
+  padding: 0.5em 8px;
+  height: auto;
 }
 
 .line-number.remove {

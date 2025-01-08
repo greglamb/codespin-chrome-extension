@@ -18,7 +18,12 @@ export class FileEdits extends HTMLElement {
   #currentFilename: string = "";
   #loading: boolean = false;
   #contentLineCount: number = 0;
-  #diffLines: { type: 'header' | 'add' | 'remove' | 'context', number?: number }[] = [];
+  #diffLines: {
+    type: 'header' | 'add' | 'remove' | 'context';
+    oldNumber?: number;
+    newNumber?: number;
+    content: string;
+  }[] = [];
 
   constructor() {
     super();
@@ -60,22 +65,58 @@ export class FileEdits extends HTMLElement {
     // Parse the diff to track line numbers
     const lines = patch.split('\n');
     this.#diffLines = [];
-    let originalLineNum = 0;
-    let modifiedLineNum = 0;
+    let oldStart = 0;
+    let newStart = 0;
+    let oldLine = 0;
+    let newLine = 0;
 
-    for (const line of lines) {
-      if (line.startsWith('---') || line.startsWith('+++') || line.startsWith('@@')) {
-        this.#diffLines.push({ type: 'header' });
-      } else if (line.startsWith('-')) {
-        originalLineNum++;
-        this.#diffLines.push({ type: 'remove', number: originalLineNum });
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      if (line.startsWith('---') || line.startsWith('+++')) {
+        this.#diffLines.push({ type: 'header', content: line });
+        continue;
+      }
+      
+      if (line.startsWith('@@')) {
+        const match = line.match(/@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+        if (match) {
+          oldStart = parseInt(match[1], 10);
+          newStart = parseInt(match[2], 10);
+          oldLine = oldStart;
+          newLine = newStart;
+          this.#diffLines.push({ type: 'header', content: line });
+        }
+        continue;
+      }
+
+      if (line.startsWith('-')) {
+        this.#diffLines.push({
+          type: 'remove',
+          oldNumber: oldLine++,
+          content: line
+        });
       } else if (line.startsWith('+')) {
-        modifiedLineNum++;
-        this.#diffLines.push({ type: 'add', number: modifiedLineNum });
+        this.#diffLines.push({
+          type: 'add',
+          newNumber: newLine++,
+          content: line
+        });
+      } else if (line.length > 0) {
+        this.#diffLines.push({
+          type: 'context',
+          oldNumber: oldLine++,
+          newNumber: newLine++,
+          content: line
+        });
       } else {
-        originalLineNum++;
-        modifiedLineNum++;
-        this.#diffLines.push({ type: 'context', number: modifiedLineNum });
+        // Empty lines in the diff should still maintain line numbers
+        this.#diffLines.push({
+          type: 'context',
+          oldNumber: oldLine++,
+          newNumber: newLine++,
+          content: line
+        });
       }
     }
 
@@ -169,34 +210,48 @@ export class FileEdits extends HTMLElement {
           <div class="loading">Loading...</div>
         ) : (
           <div class="code-container">
-            <div class="line-numbers">
-              {this.#viewMode === "content" ? (
-                Array.from({ length: this.#contentLineCount }, (_, i) => (
-                  <div class="line-number">{i + 1}</div>
-                ))
-              ) : (
-                this.#diffLines.map(line => (
-                  <div class={`line-number ${line.type}`}>
-                    {line.type === 'header' ? '' : line.number}
-                  </div>
-                ))
-              )}
-            </div>
-            <pre>
-              <code
-                class="code-block hljs"
-                innerHTML={
-                  this.#viewMode === "content"
-                    ? this.#highlightedContent
-                    : this.#highlightedDiff
-                }
-              />
-            </pre>
+            {this.#viewMode === "content" ? (
+              <>
+                <div class="line-numbers">
+                  {Array.from({ length: this.#contentLineCount }, (_, i) => (
+                    <div class="line-number">{i + 1}</div>
+                  ))}
+                </div>
+                <pre>
+                  <code
+                    class="code-block hljs"
+                    innerHTML={this.#highlightedContent}
+                  />
+                </pre>
+              </>
+            ) : (
+              <>
+                <div class="line-numbers old">
+                  {this.#diffLines.map(line => (
+                    <div class={`line-number ${line.type}`}>
+                      {line.type === 'header' ? '' : line.oldNumber || ''}
+                    </div>
+                  ))}
+                </div>
+                <div class="line-numbers new">
+                  {this.#diffLines.map(line => (
+                    <div class={`line-number ${line.type}`}>
+                      {line.type === 'header' ? '' : line.newNumber || ''}
+                    </div>
+                  ))}
+                </div>
+                <pre>
+                  <code
+                    class="code-block hljs"
+                    innerHTML={this.#highlightedDiff}
+                  />
+                </pre>
+              </>
+            )}
           </div>
         )}
       </div>
     );
-
     applyDiff(this.shadowRoot!, vdom);
   }
 }
