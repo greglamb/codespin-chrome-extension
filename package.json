@@ -12,12 +12,12 @@
     "@types/wicg-file-system-access": "^2023.10.5",
     "diff": "^7.0.0",
     "highlight.js": "^11.11.1",
-    "webjsx": "^0.0.63"
+    "webjsx": "^0.0.65"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.260",
-    "@types/node": "^20.10.0",
-    "typescript": "^5.3.0",
-    "vite": "^5.0.0"
+    "@types/chrome": "^0.0.293",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
   }
 }

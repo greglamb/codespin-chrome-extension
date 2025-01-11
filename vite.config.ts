@@ -14,12 +14,22 @@ export default defineConfig({
         format: "es",
         dir: "dist",
         manualChunks: () => "main", // Force everything into a single chunk
+        minifyInternalExports: false
       },
     },
     target: "ES2022",
     sourcemap: true,
     cssCodeSplit: false,
     modulePreload: false,
+    minify: false,
+    terserOptions: {
+      mangle: false,
+      compress: false,
+      format: {
+        comments: true,
+        beautify: true
+      }
+    }
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".css"],
