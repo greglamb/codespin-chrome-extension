@@ -17,6 +17,8 @@ export class FileEdits extends HTMLElement {
   #viewMode: ViewMode = "content";
   #currentFilename: string = "";
   #loading: boolean = false;
+  #contentLineCount: number = 0;
+  #diffLines: { type: 'header' | 'add' | 'remove' | 'context', number?: number }[] = [];
 
   constructor() {
     super();
@@ -52,8 +54,42 @@ export class FileEdits extends HTMLElement {
       this.#originalContent,
       this.#content,
       "Original",
-      "Modified"
+      "Modified",
+      {
+        context: Number.MAX_SAFE_INTEGER // Show all context lines
+      }
     );
+
+    // Parse the diff to track line numbers
+    const lines = patch.split('\n');
+    this.#diffLines = [];
+    let currentLineNum = 0;
+    let inHeader = true;
+
+    for (const line of lines) {
+      if (line.startsWith('\\ ')) {
+        // Show "No newline" messages with no line number
+        this.#diffLines.push({ type: 'header' });
+        continue;
+      }
+
+      if (inHeader || line.startsWith('@@')) {
+        if (line.startsWith('@@')) {
+          inHeader = false;
+        }
+        this.#diffLines.push({ type: 'header' });
+      } else {
+        if (line.startsWith('-')) {
+          this.#diffLines.push({ type: 'remove' });
+        } else if (line.startsWith('+')) {
+          currentLineNum++;
+          this.#diffLines.push({ type: 'add', number: currentLineNum });
+        } else if (line.length > 0) {
+          currentLineNum++;
+          this.#diffLines.push({ type: 'context', number: currentLineNum });
+        }
+      }
+    }
 
     try {
       this.#highlightedDiff = hljs.highlight(patch, { language: "diff" }).value;
@@ -96,6 +132,7 @@ export class FileEdits extends HTMLElement {
   async setContent(content: string, filename: string) {
     this.#content = content;
     this.#currentFilename = filename;
+    this.#contentLineCount = content.split('\n').length;
 
     try {
       const detectedLanguage = this.detectLanguage(filename);
@@ -143,16 +180,31 @@ export class FileEdits extends HTMLElement {
         {this.#loading ? (
           <div class="loading">Loading...</div>
         ) : (
-          <pre class="code-container">
-            <code
-              class="code-block hljs"
-              innerHTML={
-                this.#viewMode === "content"
-                  ? this.#highlightedContent
-                  : this.#highlightedDiff
-              }
-            />
-          </pre>
+          <div class="code-container">
+            <div class="line-numbers">
+              {this.#viewMode === "content" ? (
+                Array.from({ length: this.#contentLineCount }, (_, i) => (
+                  <div class="line-number">{i + 1}</div>
+                ))
+              ) : (
+                this.#diffLines.map(line => (
+                  <div class={`line-number ${line.type}`}>
+                    {line.type === 'header' || line.type === 'remove' ? '' : line.number}
+                  </div>
+                ))
+              )}
+            </div>
+            <pre>
+              <code
+                class="code-block hljs"
+                innerHTML={
+                  this.#viewMode === "content"
+                    ? this.#highlightedContent
+                    : this.#highlightedDiff
+                }
+              />
+            </pre>
+          </div>
         )}
       </div>
     );
