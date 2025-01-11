@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CodeSpin.AI Chat",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Allow ChatGPT and Claude to edit your local project files",
   "permissions": [],
   "content_scripts": [
