@@ -51,28 +51,23 @@ async function attachSyncButton() {
 // This needs to run only once because the textbox is created only once.
 async function attachInboundButton() {
   if (!document.querySelector("codespin-chatgpt-inbound-button")) {
-    const composerBackground = document.getElementById("composer-background");
-    if (!composerBackground) return;
+    const composer = document.getElementById("composer-background");
+    if (!composer) return;
 
-    const buttons = composerBackground.querySelectorAll("button");
-    const buttonsArray = Array.from(buttons);
+    // Get second div child of composer
+    const secondDiv = composer.children[1];
+    if (!secondDiv) return;
 
-    // Get the second to last button
-    const targetButton = buttonsArray[buttonsArray.length - 2];
+    // Get first div of that div
+    const targetDiv = secondDiv.children[0];
+    if (!targetDiv) return;
 
-    // Ensure the button is found before proceeding
-    if (targetButton) {
-      // Create a new custom element
-      const inboundButton = createDOMElement(
-        <codespin-chatgpt-inbound-button></codespin-chatgpt-inbound-button>
-      );
+    const inboundButton = createDOMElement(
+      <codespin-chatgpt-inbound-button></codespin-chatgpt-inbound-button>
+    );
 
-      // Insert the custom element right after the button
-      targetButton.parentElement?.parentElement?.insertAdjacentElement(
-        "afterend",
-        inboundButton as Element
-      );
-    }
+    // Append as last element
+    targetDiv.appendChild(inboundButton as Element);
   }
 }
 
