@@ -15,18 +15,8 @@
   flex-direction: row;
 }
 
-.code-block {
-  display: block;
-  padding: 16px;
-  font-family: "Menlo", "Monaco", "Courier New", monospace;
-  font-size: 13px;
-  line-height: 1.4;
-  tab-size: 2;
-  white-space: pre;
-}
-
 .line-numbers {
-  padding: 16px 8px;
+  padding: 0 8px;
   background: #252525;
   border-right: 1px solid #333;
   color: #858585;
@@ -35,11 +25,17 @@
   line-height: 1.4;
   text-align: right;
   user-select: none;
+  min-width: 3em;
 }
 
-.line-number {
-  padding-right: 8px;
-  min-width: 2em;
+.code-block {
+  display: block;
+  padding: 16px;
+  font-family: "Menlo", "Monaco", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  tab-size: 2;
+  white-space: pre;
 }
 
 pre {

@@ -48,7 +48,7 @@
 }
 
 .line-numbers {
-  padding: 16px 8px;
+  padding: 0 8px;
   background: #252525;
   border-right: 1px solid #333;
   color: #858585;
@@ -58,41 +58,6 @@
   text-align: right;
   user-select: none;
   min-width: 3em;
-}
-
-.line-numbers.old {
-  border-right: 1px solid #444;
-}
-
-.line-numbers.new {
-  border-right: 1px solid #333;
-}
-
-.line-number {
-  padding-right: 8px;
-  height: 1.4em;
-  white-space: pre;
-}
-
-.line-number.header {
-  color: #4b4b4b;
-  font-style: italic;
-  padding: 0.5em 8px;
-  height: auto;
-}
-
-.line-number.remove {
-  color: #f14c4c;
-  background: rgba(255, 0, 0, 0.05);
-}
-
-.line-number.add {
-  color: #73c991;
-  background: rgba(0, 255, 0, 0.05);
-}
-
-.line-number.context {
-  color: #858585;
 }
 
 .code-block {
