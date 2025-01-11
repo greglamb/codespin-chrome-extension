@@ -1,11 +1,12 @@
-import * as webjsx from "../libs/webjsx/factory.js";
-import { applyDiff } from "../libs/webjsx/index.js";
-import hljs from "../libs/highlight.js/core.js";
-import { getCSS } from "../api/loadCSS.js";
 import { getFileContent } from "../api/fs/files.js";
-import { createTwoFilesPatch } from "../libs/diff/index.js";
+import * as diff from "diff";
+import hljs from "highlight.js";
+import { applyDiff } from "webjsx";
 
-const styleSheet = await getCSS("./FileEdits.css", import.meta.url);
+import styles from "./FileEdits.css?inline";
+
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 type ViewMode = "content" | "diff";
 
@@ -18,7 +19,10 @@ export class FileEdits extends HTMLElement {
   #currentFilename: string = "";
   #loading: boolean = false;
   #contentLineCount: number = 0;
-  #diffLines: { type: 'header' | 'add' | 'remove' | 'context', number?: number }[] = [];
+  #diffLines: {
+    type: "header" | "add" | "remove" | "context";
+    number?: number;
+  }[] = [];
 
   constructor() {
     super();
@@ -48,7 +52,7 @@ export class FileEdits extends HTMLElement {
   #updateDiffView() {
     if (!this.#currentFilename) return;
 
-    const patch = createTwoFilesPatch(
+    const patch = diff.createTwoFilesPatch(
       this.#currentFilename,
       this.#currentFilename,
       this.#originalContent,
@@ -56,37 +60,35 @@ export class FileEdits extends HTMLElement {
       "Original",
       "Modified",
       {
-        context: Number.MAX_SAFE_INTEGER // Show all context lines
+        context: Number.MAX_SAFE_INTEGER,
       }
     );
 
-    // Parse the diff to track line numbers
-    const lines = patch.split('\n');
+    const lines = patch.split("\n");
     this.#diffLines = [];
     let currentLineNum = 0;
     let inHeader = true;
 
     for (const line of lines) {
-      if (line.startsWith('\\ ')) {
-        // Show "No newline" messages with no line number
-        this.#diffLines.push({ type: 'header' });
+      if (line.startsWith("\\ ")) {
+        this.#diffLines.push({ type: "header" });
         continue;
       }
 
-      if (inHeader || line.startsWith('@@')) {
-        if (line.startsWith('@@')) {
+      if (inHeader || line.startsWith("@@")) {
+        if (line.startsWith("@@")) {
           inHeader = false;
         }
-        this.#diffLines.push({ type: 'header' });
+        this.#diffLines.push({ type: "header" });
       } else {
-        if (line.startsWith('-')) {
-          this.#diffLines.push({ type: 'remove' });
-        } else if (line.startsWith('+')) {
+        if (line.startsWith("-")) {
+          this.#diffLines.push({ type: "remove" });
+        } else if (line.startsWith("+")) {
           currentLineNum++;
-          this.#diffLines.push({ type: 'add', number: currentLineNum });
+          this.#diffLines.push({ type: "add", number: currentLineNum });
         } else if (line.length > 0) {
           currentLineNum++;
-          this.#diffLines.push({ type: 'context', number: currentLineNum });
+          this.#diffLines.push({ type: "context", number: currentLineNum });
         }
       }
     }
@@ -132,7 +134,7 @@ export class FileEdits extends HTMLElement {
   async setContent(content: string, filename: string) {
     this.#content = content;
     this.#currentFilename = filename;
-    this.#contentLineCount = content.split('\n').length;
+    this.#contentLineCount = content.split("\n").length;
 
     try {
       const detectedLanguage = this.detectLanguage(filename);
@@ -148,7 +150,6 @@ export class FileEdits extends HTMLElement {
       this.#highlightedContent = content;
     }
 
-    // Load original content for diff view
     await this.#loadOriginalContent(filename);
     this.render();
   }
@@ -182,17 +183,21 @@ export class FileEdits extends HTMLElement {
         ) : (
           <div class="code-container">
             <div class="line-numbers">
-              {this.#viewMode === "content" ? (
-                Array.from({ length: this.#contentLineCount }, (_, i) => (
-                  <div class="line-number">{i + 1}</div>
-                ))
-              ) : (
-                this.#diffLines.map(line => (
-                  <div class={`line-number ${line.type}`}>
-                    {line.type === 'header' || line.type === 'remove' ? '' : line.number}
-                  </div>
-                ))
-              )}
+              {this.#viewMode === "content"
+                ? Array.from({ length: this.#contentLineCount }, (_, i) => (
+                    <>
+                      {i + 1}
+                      <br />
+                    </>
+                  ))
+                : this.#diffLines.map((line) => (
+                    <>
+                      {line.type === "header" || line.type === "remove"
+                        ? ""
+                        : line.number}
+                      <br />
+                    </>
+                  ))}
             </div>
             <pre>
               <code

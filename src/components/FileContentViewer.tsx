@@ -1,12 +1,11 @@
-import * as webjsx from "../libs/webjsx/factory.js";
-import { applyDiff } from "../libs/webjsx/index.js";
-import hljs from "../libs/highlight.js/core.js";
-import { getCSS } from "../api/loadCSS.js";
+import { applyDiff } from "webjsx";
+import hljs from "highlight.js";
+import styles from "./FileContentViewer.css?inline";
 
-const styleSheet = await getCSS("./FileContentViewer.css", import.meta.url);
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 export class FileContentViewer extends HTMLElement {
-  #content: string = "";
   #highlightedContent: string = "";
   #selectedFiles: string[] = [];
   #currentFile: string | undefined;
@@ -95,8 +94,7 @@ export class FileContentViewer extends HTMLElement {
   }
 
   setContent(content: string, filename: string | undefined) {
-    this.#content = content;
-    this.#lineCount = content.split('\n').length;
+    this.#lineCount = content.split("\n").length;
     if (content && filename) {
       try {
         // Try auto-detection first
@@ -136,7 +134,6 @@ export class FileContentViewer extends HTMLElement {
   }
 
   clear() {
-    this.#content = "";
     this.#highlightedContent = "";
     this.#selectedFiles = [];
     this.#currentFile = undefined;

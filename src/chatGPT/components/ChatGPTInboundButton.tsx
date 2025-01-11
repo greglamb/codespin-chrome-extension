@@ -1,10 +1,10 @@
+import { applyDiff, createDOMElement } from "webjsx";
 import { insertHTML } from "../../api/contentEditable.js";
-import { getCSS } from "../../api/loadCSS.js";
 import { fromFileSelection } from "../../api/prompt.js";
-import * as webjsx from "../../libs/webjsx/factory.js";
-import { applyDiff, createNode } from "../../libs/webjsx/index.js";
+import styles from "./ChatGPTInboundButton.css?inline";
 
-const styleSheet = await getCSS("./ChatGPTInboundButton.css", import.meta.url);
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 export class ChatGPTInboundButton extends HTMLElement {
   #dialog: HTMLDialogElement | null = null;
@@ -29,7 +29,7 @@ export class ChatGPTInboundButton extends HTMLElement {
 
   async initializeDialog() {
     if (this.#dialog) return;
-    this.#dialog = createNode(
+    this.#dialog = createDOMElement(
       <dialog class="dialog">
         <codespin-file-importer
           onselect={(e: CustomEvent<string[]>) => {

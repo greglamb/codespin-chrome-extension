@@ -1,9 +1,9 @@
 // File path:./src/claude/components/ClaudeSyncButton.tsx
-import { getCSS } from "../../api/loadCSS.js";
-import * as webjsx from "../../libs/webjsx/factory.js";
-import { applyDiff, createNode } from "../../libs/webjsx/index.js";
+import { applyDiff, createDOMElement } from "webjsx";
+import styles from "./ClaudeSyncButton.css?inline";
 
-const styleSheet = await getCSS("./ClaudeSyncButton.css", import.meta.url);
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 interface FileChange {
   path: string;
@@ -38,7 +38,7 @@ export class ClaudeSyncButton extends HTMLElement {
 
   async initializeDialog() {
     if (this.#dialog) return;
-    this.#dialog = createNode(
+    this.#dialog = createDOMElement(
       <dialog class="dialog">
         <codespin-file-writer
           onwritten={() => {

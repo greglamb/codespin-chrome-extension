@@ -8,8 +8,6 @@ export async function getDirContents(
 ): Promise<FileSystemNode> {
   try {
     if (handle.kind === "file") {
-      const fileHandle = handle as FileSystemFileHandle;
-      const file = await fileHandle.getFile();
       return {
         type: "file",
         name: handle.name,
@@ -17,24 +15,24 @@ export async function getDirContents(
     } else {
       const dirHandle = handle as FileSystemDirectoryHandle;
       const contents: FileSystemNode[] = [];
-      
+
       // Create new handler for this directory if we're processing gitignore files
-      const dirHandler = gitIgnoreHandler 
+      const dirHandler = gitIgnoreHandler
         ? await gitIgnoreHandler.createChildHandler(dirHandle, path)
         : null;
 
       // Process directory contents
       for await (const [name, entryHandle] of dirHandle.entries()) {
         const entryPath = path ? `${path}/${name}` : name;
-        
+
         // Skip if path should be ignored and we're processing gitignore
-        if (dirHandler && await dirHandler.shouldIgnorePath(entryPath)) {
+        if (dirHandler && (await dirHandler.shouldIgnorePath(entryPath))) {
           continue;
         }
-        
+
         contents.push(await getDirContents(entryHandle, dirHandler, entryPath));
       }
-      
+
       return {
         type: "dir",
         name: handle.name,

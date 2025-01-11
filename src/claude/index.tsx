@@ -1,15 +1,14 @@
-import * as webjsx from "../libs/webjsx/factory.js";
-import "./components/ClaudeInboundButton.js";
-import "./components/ClaudeSyncButton.js";
+import { createDOMElement } from "webjsx";
+import "../components/ChangeTree.js";
+import "../components/FileContentViewer.js";
+import "../components/FileEdits.js";
 import "../components/FileImporter.js";
 import "../components/FileTree.js";
-import "../components/FileContentViewer.js";
+import "../components/FileWriter.js";
 import "../components/icons/CodeSpinIcon.js";
 import "../components/icons/SyncIcon.js";
-import "../components/FileWriter.js";
-import "../components/ChangeTree.js";
-import "../components/FileEdits.js";
-import { createNode } from "../libs/webjsx/createNode.js";
+import "./components/ClaudeInboundButton.js";
+import "./components/ClaudeSyncButton.js";
 
 function addSyncButtonToDOM(preElement: HTMLElement) {
   const previousElement = preElement.previousElementSibling;
@@ -23,7 +22,7 @@ function addSyncButtonToDOM(preElement: HTMLElement) {
   );
 
   if (copyButton) {
-    const syncButton = createNode(
+    const syncButton = createDOMElement(
       <codespin-claude-sync-button style="float: left" />
     );
     copyButton.parentElement?.insertBefore(syncButton, copyButton);
@@ -49,7 +48,7 @@ async function attachInboundButton() {
     );
 
     if (uploadButtonContainer) {
-      const inboundButton = createNode(
+      const inboundButton = createDOMElement(
         <codespin-claude-inbound-button></codespin-claude-inbound-button>
       );
 

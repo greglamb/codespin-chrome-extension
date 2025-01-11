@@ -1,14 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM"],
-    "jsx": "react",
-    "jsxFactory": "webjsx.createElement",
-    "jsxFragmentFactory": "webjsx.Fragment",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "bundler",
     "strict": true,
-    "module": "ES2022",
-    "outDir": "dist/",
-    "typeRoots": ["./types", "./node_modules/@types"]
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "webjsx"
   },
-  "include": ["./src/**/*", "src/libs"]
+  "include": ["src"]
 }

@@ -1,11 +1,11 @@
+import { applyDiff } from "webjsx";
 import { getFiles } from "../api/fs/files.js";
 import { getRootDirectoryName } from "../api/fs/getDirectoryHandle.js";
-import { getCSS } from "../api/loadCSS.js";
-import * as webjsx from "../libs/webjsx/factory.js";
-import { applyDiff } from "../libs/webjsx/index.js";
 import { FileSystemNode } from "../messageTypes.js";
+import styles from "./FileTree.css?inline";
 
-const styleSheet = await getCSS("./FileTree.css", import.meta.url);
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 export class FileTree extends HTMLElement {
   #expandedNodes: Set<string> = new Set();
@@ -132,7 +132,7 @@ export class FileTree extends HTMLElement {
     }
   }
 
-  handleDirNameClick(e: MouseEvent, path: string, node: FileSystemNode) {
+  handleDirNameClick(e: MouseEvent, path: string, _: FileSystemNode) {
     e.stopPropagation();
     const hasModifier = e.ctrlKey || e.metaKey;
     if (hasModifier) {

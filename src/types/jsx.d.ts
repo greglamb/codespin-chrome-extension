@@ -1,4 +1,4 @@
-import { VNode } from "../libs/webjsx/index.js";
+import { VNode } from "webjsx";
 import { ChangeTree } from "../components/ChangeTree.js";
 import { FileContentViewer } from "../components/FileContentViewer.js";
 import { FileEdits } from "../components/FileEdits.js";

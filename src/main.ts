@@ -7,6 +7,8 @@ async function start() {
       return "CHATGPT" as const;
     } else if (hostname === "claude.ai") {
       return "CLAUDE" as const;
+    } else {
+      throw new Error("Only ChatGPT and Claude are supported now.");
     }
   }
 

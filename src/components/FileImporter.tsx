@@ -1,16 +1,17 @@
-import * as webjsx from "../libs/webjsx/factory.js";
-import { applyDiff } from "../libs/webjsx/index.js";
 import { FileContentViewer } from "./FileContentViewer.js";
 import { getFileContent } from "../api/fs/files.js";
-import { getCSS } from "../api/loadCSS.js";
 import {
   clearFileSystemCache,
   getDirectoryHandle,
 } from "../api/fs/getDirectoryHandle.js";
 import { FileSystemNode } from "../messageTypes.js";
 import { FileTree } from "./FileTree.js";
+import { applyDiff } from "webjsx";
 
-const styleSheet = await getCSS("./FileImporter.css", import.meta.url);
+import styles from "./FileImporter.css?inline";
+
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 export class FileImporter extends HTMLElement {
   #selectedFiles: Set<string> = new Set();
@@ -37,23 +38,27 @@ export class FileImporter extends HTMLElement {
   }
 
   show() {
-    const fileTree = this.shadowRoot!.querySelector("codespin-file-tree") as FileTree;
-    const viewer = this.shadowRoot!.querySelector("codespin-file-content-viewer") as FileContentViewer;
-    
+    const fileTree = this.shadowRoot!.querySelector(
+      "codespin-file-tree"
+    ) as FileTree;
+    const viewer = this.shadowRoot!.querySelector(
+      "codespin-file-content-viewer"
+    ) as FileContentViewer;
+
     if (fileTree) {
       // Get current state before refresh
       const selectedFiles = fileTree.getSelectedFiles();
       const expandedNodes = fileTree.getExpandedNodes();
-      
+
       // Clear the viewer temporarily
       if (viewer) viewer.clear();
-      
+
       // Refresh and restore state
       fileTree.fetchFiles().then(() => {
         // Small delay to ensure tree is properly loaded
         setTimeout(() => {
           fileTree.restoreState(selectedFiles, expandedNodes);
-          
+
           // Reshow first selected file in viewer if any files are selected
           const restoredSelectedFiles = fileTree.getSelectedFiles();
           if (restoredSelectedFiles.length > 0) {
@@ -69,7 +74,10 @@ export class FileImporter extends HTMLElement {
   #handleMouseMove = (e: MouseEvent) => {
     if (!this.#isDragging) return;
     const deltaX = e.clientX - this.#dragStartX;
-    const newWidth = Math.max(200, Math.min(800, this.#dragStartWidth + deltaX));
+    const newWidth = Math.max(
+      200,
+      Math.min(800, this.#dragStartWidth + deltaX)
+    );
     this.#treeWidth = newWidth;
     this.render();
   };
@@ -99,7 +107,11 @@ export class FileImporter extends HTMLElement {
     });
   }
 
-  #buildFileTreeMap(node: FileSystemNode, path: string, isRoot: boolean = false) {
+  #buildFileTreeMap(
+    node: FileSystemNode,
+    path: string,
+    isRoot: boolean = false
+  ) {
     const fullPath = isRoot ? "." : path ? `${path}/${node.name}` : node.name;
     this.#fileTree.set(fullPath, node);
     if (node.type === "dir" && node.contents) {
@@ -114,7 +126,8 @@ export class FileImporter extends HTMLElement {
     const dirNode = this.#fileTree.get(dirPath);
     if (!dirNode || dirNode.type !== "dir" || !dirNode.contents) return files;
     for (const child of dirNode.contents) {
-      const childPath = dirPath === "." ? child.name : `${dirPath}/${child.name}`;
+      const childPath =
+        dirPath === "." ? child.name : `${dirPath}/${child.name}`;
       if (child.type === "file") {
         files.push(childPath);
       } else {
@@ -127,7 +140,7 @@ export class FileImporter extends HTMLElement {
   async handleFileSelect(e: CustomEvent) {
     const paths = e.detail as string[];
     const newSelection = new Set<string>();
-    
+
     // Build file tree map if it's empty
     if (this.#fileTree.size === 0) {
       const fileTree = this.shadowRoot!.querySelector("codespin-file-tree");
@@ -155,8 +168,10 @@ export class FileImporter extends HTMLElement {
 
     this.#selectedFiles = newSelection;
     const selectedFiles = Array.from(this.#selectedFiles);
-    const viewer = this.shadowRoot!.querySelector("codespin-file-content-viewer") as FileContentViewer;
-    
+    const viewer = this.shadowRoot!.querySelector(
+      "codespin-file-content-viewer"
+    ) as FileContentViewer;
+
     if (viewer) {
       if (selectedFiles.length === 0) {
         viewer.setContent("", undefined);
@@ -178,7 +193,10 @@ export class FileImporter extends HTMLElement {
         viewer.setContent(response.result.contents, response.result.filename);
       }
     } catch (err: any) {
-      viewer.setContent(`Error loading file contents: ${err.message}`, undefined);
+      viewer.setContent(
+        `Error loading file contents: ${err.message}`,
+        undefined
+      );
     }
   }
 
@@ -208,11 +226,25 @@ export class FileImporter extends HTMLElement {
 
   render() {
     const selectedCount = this.#selectedFiles.size;
-    
-    (this.shadowRoot!.querySelector(".file-tree-container") as HTMLElement)?.style.setProperty("--tree-width", `${this.#treeWidth}px`);
-    (this.shadowRoot!.querySelector(".button-select") as HTMLElement)?.style.setProperty("--select-bg", selectedCount === 0 ? "#555" : "#2b579a");
-    (this.shadowRoot!.querySelector(".button-select") as HTMLElement)?.style.setProperty("--select-cursor", selectedCount === 0 ? "not-allowed" : "pointer");
-    (this.shadowRoot!.querySelector(".button-select") as HTMLElement)?.style.setProperty("--select-opacity", selectedCount === 0 ? "0.7" : "1");
+
+    (
+      this.shadowRoot!.querySelector(".file-tree-container") as HTMLElement
+    )?.style.setProperty("--tree-width", `${this.#treeWidth}px`);
+    (
+      this.shadowRoot!.querySelector(".button-select") as HTMLElement
+    )?.style.setProperty(
+      "--select-bg",
+      selectedCount === 0 ? "#555" : "#2b579a"
+    );
+    (
+      this.shadowRoot!.querySelector(".button-select") as HTMLElement
+    )?.style.setProperty(
+      "--select-cursor",
+      selectedCount === 0 ? "not-allowed" : "pointer"
+    );
+    (
+      this.shadowRoot!.querySelector(".button-select") as HTMLElement
+    )?.style.setProperty("--select-opacity", selectedCount === 0 ? "0.7" : "1");
 
     const vdom = (
       <div class="modal-overlay">
@@ -221,12 +253,17 @@ export class FileImporter extends HTMLElement {
             <div class="file-tree-section">
               <div class="file-tree-container">
                 <codespin-file-tree
-                  onselect={(e) => { this.handleFileSelect(e); }}
+                  onselect={(e) => {
+                    this.handleFileSelect(e);
+                  }}
                   oncancel={() => this.handleCancel()}
                 ></codespin-file-tree>
               </div>
               <div class="tree-actions">
-                <button class="button button-disconnect" onclick={() => this.handleDisconnect()}>
+                <button
+                  class="button button-disconnect"
+                  onclick={() => this.handleDisconnect()}
+                >
                   Change Directory
                 </button>
               </div>
@@ -235,14 +272,23 @@ export class FileImporter extends HTMLElement {
             <div class="content-container">
               <codespin-file-content-viewer
                 class="viewer-container"
-                onfilechange={(e: { detail: string; target: FileContentViewer; }) => {
-                  this.loadSelectedFile(e.detail, e.target as FileContentViewer);
+                onfilechange={(e: {
+                  detail: string;
+                  target: FileContentViewer;
+                }) => {
+                  this.loadSelectedFile(
+                    e.detail,
+                    e.target as FileContentViewer
+                  );
                 }}
               ></codespin-file-content-viewer>
             </div>
           </div>
           <div class="button-container">
-            <button class="button button-cancel" onclick={() => this.handleCancel()}>
+            <button
+              class="button button-cancel"
+              onclick={() => this.handleCancel()}
+            >
               Cancel
             </button>
             <button

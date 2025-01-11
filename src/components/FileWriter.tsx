@@ -1,9 +1,9 @@
-import * as webjsx from "../libs/webjsx/factory.js";
-import { applyDiff } from "../libs/webjsx/index.js";
-import { getCSS } from "../api/loadCSS.js";
 import { writeFileContent } from "../api/fs/files.js";
+import { applyDiff } from "webjsx";
+import styles from "./FileWriter.css?inline";
 
-const styleSheet = await getCSS("./FileWriter.css", import.meta.url);
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 interface FileChange {
   path: string;

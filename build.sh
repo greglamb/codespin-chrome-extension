@@ -8,7 +8,7 @@ rm -rf dist
 mkdir -p dist
 
 echo "📦 Compiling each TypeScript file to JavaScript..."
-npx tsc
+npm run build
 
 echo "📝 Copying CSS files..."
 # Copy CSS files, preserving directory structure within dist

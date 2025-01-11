@@ -1,9 +1,10 @@
-import * as webjsx from "../libs/webjsx/factory.js";
-import { applyDiff } from "../libs/webjsx/index.js";
-import { getCSS } from "../api/loadCSS.js";
 import { getRootDirectoryName } from "../api/fs/getDirectoryHandle.js";
+import { applyDiff } from "webjsx";
 
-const styleSheet = await getCSS("./FileTree.css", import.meta.url);
+import styles from "./FileTree.css?inline";
+
+const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(styles);
 
 interface FileNode {
   type: "file" | "directory";
