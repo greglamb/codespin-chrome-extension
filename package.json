@@ -18,6 +18,6 @@
     "@types/chrome": "^0.0.293",
     "@types/node": "^22.10.5",
     "typescript": "^5.7.3",
-    "vite": "^6.0.7"
+    "vite": "^6.0.9"
   }
 }
